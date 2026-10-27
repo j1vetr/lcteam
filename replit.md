@@ -1,10 +1,11 @@
-# [Project name]
+# Lacivert Teknoloji
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Lacivert Teknoloji için ekip, pano ve kişisel görev yönetimi uygulaması.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the shared API server through its managed workflow
+- `pnpm --filter @workspace/lacivert run dev` — run the frontend through its managed workflow
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
@@ -22,23 +23,41 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/lacivert` frontend app, mounted at `/`
+- `artifacts/api-server/src/routes` auth, management, tasks, workspace API
+- `lib/db/src/schema` PostgreSQL models
+- `lib/api-spec/openapi.yaml` API contract, regenerate clients after changes
+- User-supplied logos and visual reference are preserved in `.local/conversation-workspace/files/attached_assets`
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Use PostgreSQL exclusively, including sessions and login throttling. The user explicitly requires PostgreSQL as the only database.
+- Use local username/password authentication, explicitly requested by the user, rather than introducing social login.
+- Company work is visible to authorized board participants and admins. Personal tasks stay private to their creator, including from admins.
+- Team assignments require a named responsible person so an assigned task cannot become nobody's responsibility.
+- First administrator is created through the one-time setup screen. No default credentials or automatic demo sign-in. PostgreSQL advisory locking prevents duplicate first administrators.
+- Calendar dates are date-only values. Event timestamps are timezone-aware and displayed in Europe/Istanbul.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Admins manage members, teams, boards and columns, and assign tasks to themselves, members or teams.
+- Members create private self-assigned tasks and update progress on tasks assigned to them or their teams.
+- Tasks support descriptions, priorities, dates, labels, checklists, comments and activity.
+- Dashboard and notifications use real authorized workspace data.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Brand: Lacivert Teknoloji. Use the supplied navy and white logos.
+- The supplied Mobbin document is a visual reference, not a request for a screenshot gallery or marketing site.
+- Visible text is Turkish. Turkish uppercase conversion uses `toLocaleUpperCase("tr-TR")` where applicable.
+- Do not use em dash or semicolon in user-visible text.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Run schema push only against development. Do not add startup-time production DDL.
+- First-run setup remains available only while there are no users. Complete setup before sharing a publicly accessible fresh deployment.
+- Authentication cookies are HTTP-only, SameSite=Lax and secure on HTTPS. Passwords use Argon2id.
+- Signed-in frontend screens require an actual account. Never add an auth bypass for screenshots.
 
 ## Pointers
 

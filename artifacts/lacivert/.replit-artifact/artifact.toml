@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Lacivert Teknoloji"
+description = "Lacivert Teknoloji için kullanıcı adı ve şifreyle giriş, ekip yönetimi ve PostgreSQL tabanlı Kanban görev takibi."
+version = "1.0.0"
+id = "artifacts/lacivert"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21870
+
+[services.development]
+run = "pnpm --filter @workspace/lacivert run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/lacivert", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/lacivert/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21870"
+BASE_PATH = "/"

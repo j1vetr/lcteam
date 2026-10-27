@@ -1,36 +1,580 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
-  version: 0.1.0
-  description: API specification
+  version: 1.0.0
+  description: Lacivert Teknoloji görev yönetimi
 servers:
   - url: /api
-    description: Base API path
-tags:
-  - name: health
-    description: Health operations
 paths:
   /healthz:
     get:
       operationId: healthCheck
-      tags: [health]
-      summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
           content:
             application/json:
+              schema: { $ref: "#/components/schemas/HealthStatus" }
+  /auth/session:
+    get:
+      operationId: getSession
+      responses:
+        "200":
+          description: Session
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
+  /auth/setup:
+    post:
+      operationId: setupAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+  /auth/login:
+    post:
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoginInput" }
+      responses:
+        "200":
+          description: Signed in
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+  /auth/logout:
+    post:
+      operationId: logout
+      responses:
+        "200":
+          description: Signed out
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Success" }
+  /auth/password:
+    post:
+      operationId: changePassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PasswordInput" }
+      responses:
+        "200":
+          description: Changed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Success" }
+  /workspace:
+    get:
+      operationId: getWorkspace
+      responses:
+        "200":
+          description: Authorized workspace
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Workspace" }
+  /dashboard:
+    get:
+      operationId: getDashboard
+      responses:
+        "200":
+          description: Authorized summary
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Dashboard" }
+  /activity:
+    get:
+      operationId: getActivity
+      responses:
+        "200":
+          description: Authorized recent activity
+          content:
+            application/json:
               schema:
-                $ref: "#/components/schemas/HealthStatus"
+                type: array
+                items: { $ref: "#/components/schemas/Activity" }
+  /notifications:
+    get:
+      operationId: getNotifications
+      responses:
+        "200":
+          description: Notifications including upcoming deadlines
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Notification" }
+  /notifications/read:
+    post:
+      operationId: readNotifications
+      responses:
+        "200":
+          description: Read
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Success" }
+  /users:
+    post:
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UserInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+  /users/{id}:
+    parameters:
+      - { $ref: "#/components/parameters/Id" }
+    patch:
+      operationId: updateUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UserUpdate" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+  /teams:
+    post:
+      operationId: createTeam
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TeamInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Team" }
+  /teams/{id}:
+    parameters:
+      - { $ref: "#/components/parameters/Id" }
+    patch:
+      operationId: updateTeam
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TeamInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Team" }
+    delete:
+      operationId: deleteTeam
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Success" }
+  /boards:
+    post:
+      operationId: createBoard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BoardInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Board" }
+  /boards/{id}:
+    parameters:
+      - { $ref: "#/components/parameters/Id" }
+    patch:
+      operationId: updateBoard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BoardInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Board" }
+    delete:
+      operationId: deleteBoard
+      responses:
+        "200":
+          description: Deleted only when empty
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Success" }
+  /boards/{id}/columns:
+    parameters:
+      - { $ref: "#/components/parameters/Id" }
+    post:
+      operationId: createColumn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ColumnInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Column" }
+  /columns/{id}:
+    parameters:
+      - { $ref: "#/components/parameters/Id" }
+    patch:
+      operationId: updateColumn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ColumnInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Column" }
+    delete:
+      operationId: deleteColumn
+      responses:
+        "200":
+          description: Deleted only when empty
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Success" }
+  /tasks:
+    post:
+      operationId: createTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TaskInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+  /tasks/{id}:
+    parameters:
+      - { $ref: "#/components/parameters/Id" }
+    get:
+      operationId: getTask
+      responses:
+        "200":
+          description: Task with comments
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TaskDetail" }
+    patch:
+      operationId: updateTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TaskUpdate" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+    delete:
+      operationId: deleteTask
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Success" }
+  /tasks/{id}/comments:
+    parameters:
+      - { $ref: "#/components/parameters/Id" }
+    post:
+      operationId: addComment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CommentInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Comment" }
 components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
-        status:
-          type: string
-      required:
-        - status
-
+        status: { type: string }
+    Success:
+      type: object
+      required: [success]
+      properties:
+        success: { type: boolean }
+    LoginInput:
+      type: object
+      required: [username, password]
+      properties:
+        username: { type: string, minLength: 3, maxLength: 50, pattern: "^[a-zA-Z0-9._-]+$" }
+        password: { type: string, minLength: 1, maxLength: 128 }
+    AdminInput:
+      type: object
+      required: [name, username, password]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100 }
+        username: { type: string, minLength: 3, maxLength: 50, pattern: "^[a-zA-Z0-9._-]+$" }
+        password: { type: string, minLength: 10, maxLength: 128 }
+    PasswordInput:
+      type: object
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword: { type: string, minLength: 1, maxLength: 128 }
+        newPassword: { type: string, minLength: 10, maxLength: 128 }
+    User:
+      type: object
+      required: [id, name, username, role, active, color]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        username: { type: string }
+        role: { type: string, enum: [admin, member] }
+        active: { type: boolean }
+        color: { type: string }
+    UserInput:
+      type: object
+      required: [name, username, password, role]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100 }
+        username: { type: string, minLength: 3, maxLength: 50, pattern: "^[a-zA-Z0-9._-]+$" }
+        password: { type: string, minLength: 10, maxLength: 128 }
+        role: { type: string, enum: [admin, member] }
+    UserUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100 }
+        role: { type: string, enum: [admin, member] }
+        active: { type: boolean }
+    Session:
+      type: object
+      required: [user, needsSetup]
+      properties:
+        user:
+          oneOf:
+            - { $ref: "#/components/schemas/User" }
+            - { type: "null" }
+        needsSetup: { type: boolean }
+    TeamInput:
+      type: object
+      required: [name, description, memberIds]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100 }
+        description: { type: string, maxLength: 1000 }
+        memberIds: { type: array, items: { type: integer }, uniqueItems: true, maxItems: 500 }
+    Team:
+      type: object
+      required: [id, name, description, memberIds]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: string }
+        memberIds: { type: array, items: { type: integer } }
+    BoardInput:
+      type: object
+      required: [name, description, teamIds, memberIds]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100 }
+        description: { type: string, maxLength: 1000 }
+        teamIds: { type: array, items: { type: integer }, uniqueItems: true, maxItems: 100 }
+        memberIds: { type: array, items: { type: integer }, uniqueItems: true, maxItems: 500 }
+    Board:
+      type: object
+      required: [id, name, description, teamIds, memberIds, createdAt]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: string }
+        teamIds: { type: array, items: { type: integer } }
+        memberIds: { type: array, items: { type: integer } }
+        createdAt: { type: string }
+    ColumnInput:
+      type: object
+      required: [name, position, isDone]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        position: { type: integer, minimum: 0 }
+        isDone: { type: boolean }
+    Column:
+      type: object
+      required: [id, boardId, name, position, isDone]
+      properties:
+        id: { type: integer }
+        boardId: { type: integer }
+        name: { type: string }
+        position: { type: integer }
+        isDone: { type: boolean }
+    ChecklistItem:
+      type: object
+      required: [id, title, checked]
+      properties:
+        id: { type: string, maxLength: 100 }
+        title: { type: string, minLength: 1, maxLength: 500 }
+        checked: { type: boolean }
+    TaskInput:
+      type: object
+      required: [title, boardId, assigneeIds, teamIds]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200 }
+        description: { type: string, maxLength: 20000 }
+        boardId: { type: [integer, "null"] }
+        columnId: { type: [integer, "null"] }
+        priority: { type: string, enum: [low, medium, high, urgent] }
+        status: { type: string, enum: [todo, doing, review, done] }
+        assigneeIds: { type: array, items: { type: integer }, uniqueItems: true, maxItems: 500 }
+        teamIds: { type: array, items: { type: integer }, uniqueItems: true, maxItems: 100 }
+        startDate: { type: [string, "null"], format: date }
+        dueDate: { type: [string, "null"], format: date }
+        labels: { type: array, items: { type: string, maxLength: 40 }, maxItems: 20 }
+        checklist: { type: array, items: { $ref: "#/components/schemas/ChecklistItem" }, maxItems: 100 }
+    TaskUpdate:
+      type: object
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200 }
+        description: { type: string, maxLength: 20000 }
+        columnId: { type: [integer, "null"] }
+        priority: { type: string, enum: [low, medium, high, urgent] }
+        status: { type: string, enum: [todo, doing, review, done] }
+        assigneeIds: { type: array, items: { type: integer }, uniqueItems: true, maxItems: 500 }
+        teamIds: { type: array, items: { type: integer }, uniqueItems: true, maxItems: 100 }
+        startDate: { type: [string, "null"], format: date }
+        dueDate: { type: [string, "null"], format: date }
+        labels: { type: array, items: { type: string, maxLength: 40 }, maxItems: 20 }
+        checklist: { type: array, items: { $ref: "#/components/schemas/ChecklistItem" }, maxItems: 100 }
+        position: { type: number }
+    Task:
+      type: object
+      required: [id, title, description, boardId, columnId, priority, status, assigneeIds, teamIds, creatorId, startDate, dueDate, labels, checklist, position, createdAt, updatedAt, commentCount]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        description: { type: string }
+        boardId: { type: [integer, "null"] }
+        columnId: { type: [integer, "null"] }
+        priority: { type: string, enum: [low, medium, high, urgent] }
+        status: { type: string, enum: [todo, doing, review, done] }
+        assigneeIds: { type: array, items: { type: integer } }
+        teamIds: { type: array, items: { type: integer } }
+        creatorId: { type: integer }
+        startDate: { type: [string, "null"] }
+        dueDate: { type: [string, "null"] }
+        labels: { type: array, items: { type: string } }
+        checklist: { type: array, items: { $ref: "#/components/schemas/ChecklistItem" } }
+        position: { type: number }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+        commentCount: { type: integer }
+    CommentInput:
+      type: object
+      required: [text]
+      properties:
+        text: { type: string, minLength: 1, maxLength: 5000 }
+    Comment:
+      type: object
+      required: [id, taskId, userId, text, createdAt]
+      properties:
+        id: { type: integer }
+        taskId: { type: integer }
+        userId: { type: integer }
+        text: { type: string }
+        createdAt: { type: string }
+    Activity:
+      type: object
+      required: [id, userId, taskId, message, createdAt]
+      properties:
+        id: { type: integer }
+        userId: { type: integer }
+        taskId: { type: integer }
+        message: { type: string }
+        createdAt: { type: string }
+    Notification:
+      type: object
+      required: [id, taskId, message, read, createdAt]
+      properties:
+        id: { type: integer }
+        taskId: { type: integer }
+        message: { type: string }
+        read: { type: boolean }
+        createdAt: { type: string }
+    TaskDetail:
+      type: object
+      required: [task, comments, activity]
+      properties:
+        task: { $ref: "#/components/schemas/Task" }
+        comments: { type: array, items: { $ref: "#/components/schemas/Comment" } }
+        activity: { type: array, items: { $ref: "#/components/schemas/Activity" } }
+    Workspace:
+      type: object
+      required: [users, teams, boards, columns, tasks]
+      properties:
+        users: { type: array, items: { $ref: "#/components/schemas/User" } }
+        teams: { type: array, items: { $ref: "#/components/schemas/Team" } }
+        boards: { type: array, items: { $ref: "#/components/schemas/Board" } }
+        columns: { type: array, items: { $ref: "#/components/schemas/Column" } }
+        tasks: { type: array, items: { $ref: "#/components/schemas/Task" } }
+    TeamSummary:
+      type: object
+      required: [teamId, total, completed, overdue]
+      properties:
+        teamId: { type: integer }
+        total: { type: integer }
+        completed: { type: integer }
+        overdue: { type: integer }
+    Dashboard:
+      type: object
+      required: [total, open, completed, overdue, dueSoon, mine, teams]
+      properties:
+        total: { type: integer }
+        open: { type: integer }
+        completed: { type: integer }
+        overdue: { type: integer }
+        dueSoon: { type: integer }
+        mine: { type: integer }
+        teams: { type: array, items: { $ref: "#/components/schemas/TeamSummary" } }

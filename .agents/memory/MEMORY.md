@@ -1,0 +1,1 @@
+- [Codegen compatibility](codegen-compatibility.md) — Orval can infer the wrong React Query major in this monorepo, so keep compatibility explicit.
