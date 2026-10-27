@@ -6,6 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { EmptyState, ErrorState, PageHeader, PriorityTag, Segmented } from "@/components/bits";
 import { dueState, errMsg, fmtDate, isAssignedToMe, STATUS, STATUS_ORDER, useInvalidateAll, useMe, useTaskUi, useWorkspace } from "@/lib/app";
 import { cn } from "@/lib/utils";
+import { QuickTask } from "@/components/quick-task";
+import { matchesTaskMonth, TaskMonthFilter } from "@/components/task-month-filter";
 
 type Filter = "all" | "personal" | "assigned";
 
@@ -18,11 +20,13 @@ export default function MyTasksPage() {
   const { toast } = useToast();
   const [filter, setFilter] = useState<Filter>("all");
   const [hideDone, setHideDone] = useState(false);
+  const [month, setMonth] = useState("");
 
   const mine = (ws?.tasks ?? []).filter((t) => (t.boardId === null && t.creatorId === me.id) || isAssignedToMe(t, me, ws));
   const shown = mine
     .filter((t) => (filter === "personal" ? t.boardId === null : filter === "assigned" ? t.boardId !== null : true))
-    .filter((t) => !hideDone || t.status !== "done");
+    .filter((t) => !hideDone || t.status !== "done")
+    .filter((t) => matchesTaskMonth(t, month));
 
   const setStatus = (t: Task, status: Task["status"]) =>
     update.mutate({ id: t.id, data: { status } }, { onSuccess: () => invalidate(), onError: (e) => toast({ title: "Durum değiştirilemedi", description: errMsg(e), variant: "destructive" }) });
@@ -34,7 +38,12 @@ export default function MyTasksPage() {
       <PageHeader title="Görevlerim." sub="Kişisel işleriniz ve size atanan şirket görevleri." actions={<button className="pill pill-primary" onClick={() => newTask()} data-testid="button-new-personal"><Plus className="h-4 w-4" />Kişisel görev</button>} />
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Segmented value={filter} onChange={setFilter} options={[{ value: "all", label: `Tümü ${mine.length}` }, { value: "personal", label: "Kişisel" }, { value: "assigned", label: "Atanan" }]} />
+        <TaskMonthFilter value={month} onChange={setMonth} />
         <button className={cn("pill pill-sm ml-auto", hideDone ? "pill-primary" : "pill-soft")} onClick={() => setHideDone(!hideDone)} aria-pressed={hideDone} data-testid="button-hide-done">Tamamlananları gizle</button>
+      </div>
+      <div className="mb-5">
+        <QuickTask />
+        {month && <p className="mt-2 px-1 text-xs text-muted-foreground">Ay filtresi bitiş tarihini esas alır. Tarihsiz yeni görevler için “Tüm tarihler” veya “Tarihsiz” seçin.</p>}
       </div>
 
       {isLoading ? (

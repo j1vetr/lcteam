@@ -25,6 +25,8 @@ import { useToast } from "@/hooks/use-toast";
 import { AvatarStack, ChipPicker, EmptyState, ErrorState, Field, PriorityTag, UserAvatar } from "@/components/bits";
 import { dueState, errMsg, fmtDate, isAssignedToMe, useInvalidateAll, useMe, useTaskUi, useWorkspace } from "@/lib/app";
 import { cn } from "@/lib/utils";
+import { QuickTask } from "@/components/quick-task";
+import { matchesTaskMonth, TaskMonthFilter } from "@/components/task-month-filter";
 
 export default function BoardPage() {
   const params = useParams<{ id?: string }>();
@@ -35,6 +37,7 @@ export default function BoardPage() {
   const { newTask } = useTaskUi();
   const [query, setQuery] = useState("");
   const [mineOnly, setMineOnly] = useState(false);
+  const [month, setMonth] = useState("");
   const [boardDialog, setBoardDialog] = useState<{ open: boolean; board: Board | null }>({ open: false, board: null });
   const [columnDialog, setColumnDialog] = useState<{ open: boolean; column: Column | null }>({ open: false, column: null });
   const [confirmBoard, setConfirmBoard] = useState(false);
@@ -123,8 +126,10 @@ export default function BoardPage() {
             <button className={cn("pill pill-sm h-9", mineOnly ? "pill-primary" : "pill-soft")} onClick={() => setMineOnly(!mineOnly)} aria-pressed={mineOnly} data-testid="button-filter-mine">
               Bana atananlar
             </button>
+            <TaskMonthFilter value={month} onChange={setMonth} />
           </div>
         )}
+        {month && <p className="mt-2 text-xs text-muted-foreground">Filtre bitiş tarihine göredir. Tarihsiz yeni görevleri görmek için “Tüm tarihler” veya “Tarihsiz” seçin.</p>}
       </div>
 
       {!board ? (
@@ -138,7 +143,7 @@ export default function BoardPage() {
           )}
         </div>
       ) : (
-        <KanbanBoard ws={ws} board={board} tasks={boardTasks} query={query} mineOnly={mineOnly} onEditColumn={(c) => setColumnDialog({ open: true, column: c })} onAddColumn={() => setColumnDialog({ open: true, column: null })} />
+        <KanbanBoard key={board.id} ws={ws} board={board} tasks={boardTasks} query={query} mineOnly={mineOnly} month={month} onEditColumn={(c) => setColumnDialog({ open: true, column: c })} onAddColumn={() => setColumnDialog({ open: true, column: null })} />
       )}
 
       <BoardDialog open={boardDialog.open} board={boardDialog.board} ws={ws} onOpenChange={(v) => setBoardDialog((s) => ({ ...s, open: v }))} onCreated={(b) => navigate(`/boards/${b.id}`)} />
@@ -176,7 +181,7 @@ export default function BoardPage() {
   );
 }
 
-function KanbanBoard({ ws, board, tasks, query, mineOnly, onEditColumn, onAddColumn }: { ws: Workspace; board: Board; tasks: Task[]; query: string; mineOnly: boolean; onEditColumn: (c: Column) => void; onAddColumn: () => void }) {
+function KanbanBoard({ ws, board, tasks, query, mineOnly, month, onEditColumn, onAddColumn }: { ws: Workspace; board: Board; tasks: Task[]; query: string; mineOnly: boolean; month: string; onEditColumn: (c: Column) => void; onAddColumn: () => void }) {
   const me = useMe();
   const isAdmin = me.role === "admin";
   const qc = useQueryClient();
@@ -192,7 +197,7 @@ function KanbanBoard({ ws, board, tasks, query, mineOnly, onEditColumn, onAddCol
   const columns = ws.columns.filter((c) => c.boardId === board.id).sort((a, b) => a.position - b.position);
   const q = query.trim().toLocaleLowerCase("tr-TR");
   const visible = (t: Task) =>
-    (!q || t.title.toLocaleLowerCase("tr-TR").includes(q) || t.labels.some((l) => l.toLocaleLowerCase("tr-TR").includes(q))) && (!mineOnly || t.assigneeIds.includes(me.id));
+    (!q || t.title.toLocaleLowerCase("tr-TR").includes(q) || t.labels.some((l) => l.toLocaleLowerCase("tr-TR").includes(q))) && (!mineOnly || isAssignedToMe(t, me, ws)) && matchesTaskMonth(t, month);
   const byCol = (cid: number) => tasks.filter((t) => t.columnId === cid).sort((a, b) => a.position - b.position);
   const canMove = (t: Task) => isAdmin || isAssignedToMe(t, me, ws);
 
@@ -258,7 +263,7 @@ function KanbanBoard({ ws, board, tasks, query, mineOnly, onEditColumn, onAddCol
             <header className="flex items-center gap-2 px-4 pb-2 pt-3.5">
               {col.isDone && <CheckCircle2 className="h-3.5 w-3.5 text-primary" aria-label="Tamamlanma sütunu" />}
               <h2 className="flex-1 truncate text-[13.5px] font-semibold">{col.name}</h2>
-              <span className="eyebrow">{all.length}</span>
+              <span className="eyebrow">{list.length === all.length ? all.length : `${list.length}/${all.length}`}</span>
               {(isAdmin) && (
                 <button className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-card" onClick={() => newTask({ boardId: board.id, columnId: col.id })} aria-label={`${col.name} sütununa görev ekle`} data-testid={`button-add-task-${col.id}`}>
                   <Plus className="h-3.5 w-3.5" />
@@ -304,6 +309,7 @@ function KanbanBoard({ ws, board, tasks, query, mineOnly, onEditColumn, onAddCol
                   {all.length ? "Filtreye uyan görev yok" : "Görevleri buraya sürükleyin"}
                 </div>
               )}
+              {isAdmin && <QuickTask boardId={board.id} columnId={col.id} />}
             </div>
           </section>
         );

@@ -117,9 +117,6 @@ export function NewTaskDialog({ open, onOpenChange, defaults }: { open: boolean;
             <Field label="Başlık">
               <input autoFocus className="field" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Örneğin teklif dosyasını hazırla" maxLength={200} data-testid="input-task-title" />
             </Field>
-            <Field label="Açıklama">
-              <textarea className="field min-h-[72px] resize-y" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Bağlam, beklenen çıktı, notlar" data-testid="input-task-description" />
-            </Field>
             {mode === "board" ? (
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Pano">
@@ -148,16 +145,13 @@ export function NewTaskDialog({ open, onOpenChange, defaults }: { open: boolean;
                 </select>
               </Field>
             )}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <Field label="Öncelik">
                 <select className="field" value={priority} onChange={(e) => setPriority(e.target.value as Task["priority"])} data-testid="select-task-priority">
                   {PRIORITY_ORDER.map((p) => (
                     <option key={p} value={p}>{PRIORITY[p].label}</option>
                   ))}
                 </select>
-              </Field>
-              <Field label="Başlangıç">
-                <input type="date" className="field" value={startDate} onChange={(e) => setStartDate(e.target.value)} data-testid="input-task-start" />
               </Field>
               <Field label="Bitiş">
                 <input type="date" className="field" value={dueDate} onChange={(e) => setDueDate(e.target.value)} data-testid="input-task-due" />
@@ -168,14 +162,25 @@ export function NewTaskDialog({ open, onOpenChange, defaults }: { open: boolean;
                 <Field label="Sorumlular">
                   <ChipPicker testid="chip-assignee" items={activeUsers} value={assigneeIds} onChange={setAssigneeIds} render={(u) => (<><UserAvatar user={u} size={20} />{u.id === me.id ? "Ben" : u.name}</>)} />
                 </Field>
-                <Field label="Ekipler" hint="Ekip atamasında en az bir sorumlu kişi gerekir.">
-                  <ChipPicker testid="chip-team" items={ws?.teams ?? []} value={teamIds} onChange={setTeamIds} empty="Henüz ekip yok" render={(t) => <span className="pl-1.5">{t.name}</span>} />
-                </Field>
               </>
             )}
-            <Field label="Etiketler" hint="Virgülle ayırın">
-              <input className="field" value={labels} onChange={(e) => setLabels(e.target.value)} placeholder="tasarım, müşteri" data-testid="input-task-labels" />
-            </Field>
+            <details key={String(open)} className="rounded-2xl border border-border px-4 py-3">
+              <summary className="cursor-pointer text-[13px] font-semibold">Diğer ayrıntılar</summary>
+              <div className="mt-4 space-y-4">
+                <Field label="Açıklama">
+                  <textarea className="field min-h-[72px] resize-y" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Bağlam, beklenen çıktı, notlar" data-testid="input-task-description" />
+                </Field>
+                <Field label="Başlangıç">
+                  <input type="date" className="field" value={startDate} onChange={(e) => setStartDate(e.target.value)} data-testid="input-task-start" />
+                </Field>
+                {mode === "board" && <Field label="Ekipler" hint="Ekip atamasında en az bir sorumlu kişi gerekir.">
+                  <ChipPicker testid="chip-team" items={ws?.teams ?? []} value={teamIds} onChange={setTeamIds} empty="Henüz ekip yok" render={(t) => <span className="pl-1.5">{t.name}</span>} />
+                </Field>}
+                <Field label="Etiketler" hint="Virgülle ayırın">
+                  <input className="field" value={labels} onChange={(e) => setLabels(e.target.value)} placeholder="tasarım, müşteri" data-testid="input-task-labels" />
+                </Field>
+              </div>
+            </details>
             {error && <p className="rounded-xl bg-destructive/8 px-3 py-2 text-[13px] text-destructive" data-testid="text-task-error">{error}</p>}
           </div>
           <div className="flex justify-end gap-2 border-t border-border px-6 py-4">
