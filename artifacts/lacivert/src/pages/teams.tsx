@@ -177,7 +177,7 @@ function TeamDialog({ open, team, ws, onOpenChange }: { open: boolean; team: Tea
       <DialogContent className="max-h-[92dvh] overflow-y-auto rounded-3xl sm:max-w-[500px]">
         <form onSubmit={submit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle className="heading text-xl">{team ? "Ekibi düzenle." : "Yeni ekip."}</DialogTitle>
+            <DialogTitle className="heading text-xl">{team ? "Ekibi Düzenle" : "Yeni Ekip"}</DialogTitle>
             <DialogDescription>Üyeler, ekibin erişebildiği panoları görür.</DialogDescription>
           </DialogHeader>
           <Field label="Ekip adı"><input className="field" value={name} onChange={(e) => setName(e.target.value)} maxLength={100} placeholder="Örneğin Saha operasyonları" data-testid="input-team-name" /></Field>
@@ -233,7 +233,7 @@ function UserDialog({ open, user, meId, onOpenChange }: { open: boolean; user: U
       <DialogContent className="rounded-3xl sm:max-w-[460px]">
         <form onSubmit={submit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle className="heading text-xl">{user ? "Hesabı düzenle." : "Yeni hesap."}</DialogTitle>
+            <DialogTitle className="heading text-xl">{user ? "Hesabı Düzenle" : "Yeni Hesap"}</DialogTitle>
             <DialogDescription>{user ? `@${user.username}` : "Kişiye kullanıcı adı ve geçici parolayı siz iletin."}</DialogDescription>
           </DialogHeader>
           <Field label="Ad soyad"><input className="field" value={name} onChange={(e) => setName(e.target.value)} maxLength={100} data-testid="input-user-name" /></Field>

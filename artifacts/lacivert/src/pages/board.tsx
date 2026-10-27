@@ -83,7 +83,6 @@ export default function BoardPage() {
             {board?.description && <p className="mt-1 max-w-2xl text-[13.5px] text-muted-foreground">{board.description}</p>}
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {board && <AvatarStack users={ws.users.filter((u) => board.memberIds.includes(u.id) || ws.teams.some((t) => board.teamIds.includes(t.id) && t.memberIds.includes(u.id)))} max={5} size={26} />}
             {isAdmin && (
               <button className="pill pill-outline" onClick={() => setBoardDialog({ open: true, board: null })} data-testid="button-new-board">
                 <Plus className="h-4 w-4" />Pano
@@ -444,7 +443,7 @@ function BoardDialog({ open, board, ws, onOpenChange, onCreated }: { open: boole
       <DialogContent className="max-h-[92dvh] overflow-y-auto rounded-3xl sm:max-w-[520px]">
         <form onSubmit={submit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle className="heading text-xl">{board ? "Panoyu düzenle." : "Yeni pano."}</DialogTitle>
+            <DialogTitle className="heading text-xl">{board ? "Panoyu Düzenle" : "Yeni Pano"}</DialogTitle>
             <DialogDescription>Panoyu yalnızca seçtiğiniz ekipler ve kişiler görür.</DialogDescription>
           </DialogHeader>
           <Field label="Pano adı"><input className="field" value={name} onChange={(e) => setName(e.target.value)} maxLength={100} placeholder="Örneğin Satış operasyonları" data-testid="input-board-name" /></Field>
@@ -496,7 +495,7 @@ function ColumnDialog({ open, column, board, ws, onOpenChange }: { open: boolean
       <DialogContent className="rounded-3xl sm:max-w-[420px]">
         <form onSubmit={submit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle className="heading text-xl">{column ? "Sütunu düzenle." : "Yeni sütun."}</DialogTitle>
+            <DialogTitle className="heading text-xl">{column ? "Sütunu Düzenle" : "Yeni Sütun"}</DialogTitle>
             <DialogDescription>{board.name}</DialogDescription>
           </DialogHeader>
           <Field label="Sütun adı"><input className="field" value={name} onChange={(e) => setName(e.target.value)} maxLength={100} data-testid="input-column-name" /></Field>

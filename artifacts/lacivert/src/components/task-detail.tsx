@@ -82,7 +82,7 @@ function TaskDetailBody({ id, onClose }: { id: number; onClose: () => void }) {
   if (isError || !data || !task)
     return (
       <div className="p-8 text-center">
-        <h3 className="heading text-lg">Görev açılamadı.</h3>
+        <h3 className="heading text-lg">Görev Açılamadı</h3>
         <p className="mt-1 text-sm text-muted-foreground">Silinmiş olabilir ya da erişiminiz yok.</p>
         <button className="pill pill-outline mt-4" onClick={() => refetch()}>Tekrar dene</button>
       </div>

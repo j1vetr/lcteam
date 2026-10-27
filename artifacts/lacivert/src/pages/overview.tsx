@@ -17,9 +17,6 @@ export default function OverviewPage() {
     .filter((t) => t.assigneeIds.includes(me.id) && !isTaskDone(t, ws) && (dueState(t) === "overdue" || dueState(t) === "soon" || t.priority === "urgent"))
     .slice(0, 6);
 
-  const hour = new Date().getHours();
-  const greet = hour < 12 ? "Günaydın" : hour < 18 ? "İyi günler" : "İyi akşamlar";
-
   const stats = d
     ? [
         { k: "Açık", v: d.open, s: `${d.total} görevden` },
@@ -32,7 +29,7 @@ export default function OverviewPage() {
 
   return (
     <div className="mx-auto max-w-[1180px] px-4 py-6 md:px-8 md:py-8">
-      <PageHeader title={`${greet}, ${me.name.split(" ")[0]}.`} sub="Bugün ekibinizin ve sizin işlerinizin özeti." actions={<button className="pill pill-primary" onClick={() => newTask()} data-testid="button-overview-new"><Plus className="h-4 w-4" />Yeni görev</button>} />
+      <PageHeader title="Genel Bakış" sub="Görev durumu ve ekip özeti." actions={<button className="pill pill-primary" onClick={() => newTask()} data-testid="button-overview-new"><Plus className="h-4 w-4" />Yeni Görev</button>} />
 
       {dash.isError ? (
         <ErrorState onRetry={() => dash.refetch()} />
@@ -119,7 +116,7 @@ export default function OverviewPage() {
           ) : act.isError ? (
             <div className="p-4"><ErrorState onRetry={() => act.refetch()} /></div>
           ) : !act.data?.length ? (
-            <div className="p-4"><EmptyState icon={<ActivityIcon className="h-5 w-5" />} title="Sessiz bir gün." text="Görevler oluşturuldukça ve güncellendikçe hareketler burada akar." /></div>
+            <div className="p-4"><EmptyState icon={<ActivityIcon className="h-5 w-5" />} title="Henüz İşlem Yok" text="Görev değişiklikleri burada listelenir." /></div>
           ) : (
             <ul className="divide-y divide-border">
               {act.data.slice(0, 30).map((a) => {

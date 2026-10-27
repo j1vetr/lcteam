@@ -36,7 +36,7 @@ function NavBody({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="flex h-full flex-col">
       <div className="px-5 pb-5 pt-6">
-        <img src={`${import.meta.env.BASE_URL}logo-navy.png`} alt="Lacivert Teknoloji" className="h-7 w-auto" />
+        <img src={`${import.meta.env.BASE_URL}logo-navy.png`} alt="Lacivert Teknoloji" className="h-auto w-full max-w-[220px] object-contain" />
       </div>
       <nav className="space-y-0.5 px-3">
         {NAV.map((n) => (
@@ -126,7 +126,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <button aria-label="Menüyü aç" className="flex h-9 w-9 items-center justify-center rounded-full bg-muted" onClick={() => setMobileOpen(true)} data-testid="button-mobile-menu">
             <Menu className="h-4 w-4" />
           </button>
-          <img src={`${import.meta.env.BASE_URL}logo-navy.png`} alt="Lacivert Teknoloji" className="h-5 w-auto" />
+          <img src={`${import.meta.env.BASE_URL}logo-navy.png`} alt="Lacivert Teknoloji" className="h-auto w-[180px] max-w-[calc(100vw-128px)] object-contain" />
           <Link href="/notifications" className="relative flex h-9 w-9 items-center justify-center rounded-full bg-muted" aria-label="Bildirimler">
             <Bell className="h-4 w-4" />
             {unread > 0 && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-primary" />}

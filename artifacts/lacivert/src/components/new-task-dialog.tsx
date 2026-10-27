@@ -5,6 +5,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useToast } from "@/hooks/use-toast";
 import { ChipPicker, Field, Segmented, UserAvatar } from "@/components/bits";
 import { errMsg, PRIORITY, PRIORITY_ORDER, STATUS, STATUS_ORDER, useInvalidateAll, useMe, useWorkspace, useTaskUi, type NewTaskDefaults } from "@/lib/app";
+import { calendarDayLabel, istanbulToday, shortcutDueDate, type DueDateShortcut } from "@/lib/task-calendar";
+
+const DUE_SHORTCUTS: { value: DueDateShortcut; label: string }[] = [
+  { value: "today", label: "Bugün" },
+  { value: "tomorrow", label: "Yarın" },
+  { value: "weekEnd", label: "Hafta Sonu" },
+  { value: "monthEnd", label: "Ay Sonu" },
+];
 
 export function NewTaskDialog({ open, onOpenChange, defaults }: { open: boolean; onOpenChange: (v: boolean) => void; defaults: NewTaskDefaults }) {
   const me = useMe();
@@ -63,6 +71,7 @@ export function NewTaskDialog({ open, onOpenChange, defaults }: { open: boolean;
     e.preventDefault();
     setError(null);
     if (!title.trim()) return setError("Görev başlığı gerekli.");
+    if (startDate && dueDate && dueDate < startDate) return setError("Bitiş tarihi başlangıç tarihinden önce olamaz.");
     const isBoard = mode === "board";
     if (isBoard && (!boardId || !columnId)) return setError("Pano ve sütun seçin.");
     if (isBoard && teamIds.length && !assigneeIds.length) return setError("Ekibe atanan görevler için en az bir sorumlu kişi seçin.");
@@ -100,7 +109,7 @@ export function NewTaskDialog({ open, onOpenChange, defaults }: { open: boolean;
       <DialogContent className="max-h-[92dvh] overflow-y-auto rounded-3xl border-border p-0 sm:max-w-[560px]">
         <form onSubmit={submit}>
           <DialogHeader className="border-b border-border px-6 pb-4 pt-6">
-            <DialogTitle className="heading text-xl">Yeni görev.</DialogTitle>
+            <DialogTitle className="heading text-xl">Yeni Görev</DialogTitle>
             <DialogDescription>{isAdmin ? "Bir panoya ekleyin ya da yalnızca size ait kişisel görev oluşturun." : "Kişisel görevler yalnızca size görünür."}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 px-6 py-5">
@@ -156,6 +165,33 @@ export function NewTaskDialog({ open, onOpenChange, defaults }: { open: boolean;
               <Field label="Bitiş">
                 <input type="date" className="field" value={dueDate} onChange={(e) => setDueDate(e.target.value)} data-testid="input-task-due" />
               </Field>
+            </div>
+            <div className="space-y-2" role="group" aria-label="Hızlı Bitiş Tarihi">
+              <div className="flex flex-wrap gap-1.5">
+                {DUE_SHORTCUTS.map((shortcut) => {
+                  const target = shortcutDueDate(shortcut.value, istanbulToday());
+                  return (
+                    <button
+                      key={shortcut.value}
+                      type="button"
+                      className={`pill pill-sm ${dueDate === target ? "pill-primary" : "pill-outline"}`}
+                      aria-pressed={dueDate === target}
+                      title={calendarDayLabel(target)}
+                      data-testid={`button-due-${shortcut.value}`}
+                      onClick={() => {
+                        setDueDate(shortcutDueDate(shortcut.value, istanbulToday()));
+                        setError(null);
+                      }}
+                    >
+                      {shortcut.label}
+                    </button>
+                  );
+                })}
+                {dueDate && <button type="button" className="pill pill-sm pill-soft" onClick={() => setDueDate("")} data-testid="button-due-clear">Temizle</button>}
+              </div>
+              <p className="text-[12px] text-muted-foreground" aria-live="polite">
+                {dueDate ? `Bitiş: ${calendarDayLabel(dueDate)}` : "Hafta Sonu, cuma gününü seçer."}
+              </p>
             </div>
             {mode === "board" && (
               <>

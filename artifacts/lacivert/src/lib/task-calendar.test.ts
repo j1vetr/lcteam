@@ -1,6 +1,25 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { calendarDays, calendarDayLabel, calendarMonthLabel, istanbulToday, shiftMonth } from "./task-calendar.ts";
+import { calendarDays, calendarDayLabel, calendarMonthLabel, istanbulToday, shiftMonth, shortcutDueDate } from "./task-calendar.ts";
+
+test("quick due dates pick today, tomorrow and the Friday workweek deadline", () => {
+  assert.equal(shortcutDueDate("today", "2026-10-27"), "2026-10-27");
+  assert.equal(shortcutDueDate("tomorrow", "2026-10-27"), "2026-10-28");
+  assert.equal(shortcutDueDate("weekEnd", "2026-10-27"), "2026-10-30");
+  assert.equal(shortcutDueDate("weekEnd", "2026-10-30"), "2026-10-30");
+  assert.equal(shortcutDueDate("weekEnd", "2026-10-31"), "2026-11-06");
+  assert.equal(shortcutDueDate("weekEnd", "2026-11-01"), "2026-11-06");
+  assert.equal(shortcutDueDate("weekEnd", "2026-12-31"), "2027-01-01");
+});
+
+test("month end handles leap years and tomorrow handles year rollover", () => {
+  assert.equal(shortcutDueDate("monthEnd", "2026-10-27"), "2026-10-31");
+  assert.equal(shortcutDueDate("monthEnd", "2026-02-02"), "2026-02-28");
+  assert.equal(shortcutDueDate("monthEnd", "2028-02-15"), "2028-02-29");
+  assert.equal(shortcutDueDate("monthEnd", "2026-12-31"), "2026-12-31");
+  assert.equal(shortcutDueDate("tomorrow", "2026-12-31"), "2027-01-01");
+  assert.equal(shortcutDueDate("today", istanbulToday(new Date("2026-10-26T21:15:00Z"))), "2026-10-27");
+});
 
 test("today uses Istanbul's calendar day across UTC midnight and year boundary", () => {
   assert.equal(istanbulToday(new Date("2026-12-31T20:59:59Z")), "2026-12-31");

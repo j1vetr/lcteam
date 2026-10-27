@@ -91,7 +91,7 @@ export function ChipPicker<T extends { id: number }>({
 export function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
   return (
     <label className="block space-y-1.5">
-      <span className="text-[12.5px] font-semibold text-foreground/80">{label}</span>
+      <span className="ui-title text-[12.5px] font-semibold text-foreground/80">{label}</span>
       {children}
       {hint && <span className="block text-[12px] text-muted-foreground">{hint}</span>}
     </label>
@@ -102,7 +102,7 @@ export function EmptyState({ icon, title, text, action }: { icon: ReactNode; tit
   return (
     <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-card px-6 py-14 text-center">
       <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-[30%] bg-muted text-primary">{icon}</div>
-      <h3 className="heading text-lg">{title}</h3>
+      <h3 className="heading text-lg">{title.replace(/\.+$/, "")}</h3>
       <p className="mt-1.5 max-w-sm text-[14px] text-muted-foreground">{text}</p>
       {action && <div className="mt-5">{action}</div>}
     </div>
@@ -112,7 +112,7 @@ export function EmptyState({ icon, title, text, action }: { icon: ReactNode; tit
 export function ErrorState({ onRetry, text }: { onRetry: () => void; text?: string }) {
   return (
     <div className="rounded-3xl border border-border bg-card px-6 py-10 text-center">
-      <h3 className="heading text-lg">Veriler yüklenemedi.</h3>
+      <h3 className="heading text-lg">Veriler Yüklenemedi</h3>
       <p className="mt-1 text-[14px] text-muted-foreground">{text ?? "Bağlantınızı kontrol edip tekrar deneyin."}</p>
       <button className="pill pill-outline mt-4" onClick={onRetry} data-testid="button-retry">
         Tekrar dene
@@ -146,7 +146,7 @@ export function PageHeader({ title, sub, actions }: { title: string; sub?: strin
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className="heading text-[26px] md:text-[30px]">{title}</h1>
+        <h1 className="heading text-[26px] md:text-[30px]">{title.replace(/\.+$/, "")}</h1>
         {sub && <p className="mt-1.5 text-[14.5px] font-light text-muted-foreground">{sub}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}

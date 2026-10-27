@@ -48,9 +48,13 @@ Lacivert Teknoloji için ekip, pano ve kişisel görev yönetimi uygulaması.
 ## User preferences
 
 - Brand: Lacivert Teknoloji. Use the supplied navy and white logos.
+- Keep the Lacivert logo large and prominent in the navigation and login screen.
+- The login screen must be minimal: a large logo and the login form, without decorative panels, slogans or unnecessary explanations.
 - The supplied Mobbin document is a visual reference, not a request for a screenshot gallery or marketing site.
 - Visible text is Turkish. Turkish uppercase conversion uses `toLocaleUpperCase("tr-TR")` where applicable.
 - Do not use em dash or semicolon in user-visible text.
+- Use plain, natural interface copy. Headings and short interface labels should start each word with a capital letter, respecting Turkish casing. Avoid decorative periods at the end of headings.
+- For deadline shortcuts, “Hafta Sonu” means Friday, not Sunday. On Saturday or Sunday, use the upcoming Friday. Calculate shortcuts using Istanbul's current date.
 
 ## Gotchas
 

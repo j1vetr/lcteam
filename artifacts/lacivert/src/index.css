@@ -393,6 +393,8 @@
   .pill-danger { background: hsl(var(--destructive)); color: white; }
   .pill-sm { height:28px; padding:0 11px; font-size:12.5px; }
   .heading { font-weight: 650; letter-spacing: -0.015em; line-height: 1.1; }
+  /* The document language is Turkish, including dotted İ when capitalizing. */
+  h1, h2, h3, h4, h5, h6, .pill, nav a, summary, .ui-title { text-transform: capitalize; }
   .eyebrow { font-family: var(--app-font-mono); font-size: 11px; color: hsl(var(--muted-foreground)); }
   .scroll-x::-webkit-scrollbar { height: 8px; }
   .scroll-x::-webkit-scrollbar-thumb { background: hsl(220 13% 86%); border-radius: 9999px; }

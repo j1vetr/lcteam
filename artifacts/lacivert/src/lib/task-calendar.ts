@@ -11,6 +11,19 @@ export function istanbulToday(now = new Date()): string {
   return `${part("year")}-${part("month")}-${part("day")}`;
 }
 
+export type DueDateShortcut = "today" | "tomorrow" | "weekEnd" | "monthEnd";
+
+export function shortcutDueDate(shortcut: DueDateShortcut, today: string): string {
+  const date = new Date(`${today}T00:00:00Z`);
+  if (shortcut === "tomorrow") date.setUTCDate(date.getUTCDate() + 1);
+  if (shortcut === "weekEnd") {
+    // Friday itself remains today. Saturday and Sunday target next Friday.
+    date.setUTCDate(date.getUTCDate() + (5 - date.getUTCDay() + 7) % 7);
+  }
+  if (shortcut === "monthEnd") date.setUTCMonth(date.getUTCMonth() + 1, 0);
+  return date.toISOString().slice(0, 10);
+}
+
 export function shiftMonth(month: string, delta: number): string {
   const date = new Date(`${month}-01T00:00:00Z`);
   date.setUTCMonth(date.getUTCMonth() + delta);

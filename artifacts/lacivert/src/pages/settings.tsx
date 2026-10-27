@@ -45,7 +45,7 @@ export default function SettingsPage() {
       <p className="mt-2 px-1 text-[12.5px] text-muted-foreground">Ad ve rol değişiklikleri için yöneticinize başvurun.</p>
 
       <form onSubmit={submit} className="mt-8 space-y-4 rounded-3xl border border-border bg-card p-6">
-        <h2 className="heading text-[18px]">Parola değiştir.</h2>
+        <h2 className="heading text-[18px]">Parola Değiştir</h2>
         <Field label="Mevcut parola"><input type="password" className="field" value={cur} onChange={(e) => setCur(e.target.value)} autoComplete="current-password" data-testid="input-current-password" /></Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Yeni parola" hint="En az 10 karakter"><input type="password" className="field" value={next} onChange={(e) => setNext(e.target.value)} autoComplete="new-password" data-testid="input-new-password" /></Field>
