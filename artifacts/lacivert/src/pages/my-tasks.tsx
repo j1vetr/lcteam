@@ -8,6 +8,8 @@ import { dueState, errMsg, fmtDate, isAssignedToMe, STATUS, STATUS_ORDER, useInv
 import { cn } from "@/lib/utils";
 import { QuickTask } from "@/components/quick-task";
 import { matchesTaskMonth, TaskMonthFilter } from "@/components/task-month-filter";
+import { TaskCalendar } from "@/components/task-calendar";
+import { istanbulToday } from "@/lib/task-calendar";
 
 type Filter = "all" | "personal" | "assigned";
 
@@ -21,12 +23,14 @@ export default function MyTasksPage() {
   const [filter, setFilter] = useState<Filter>("all");
   const [hideDone, setHideDone] = useState(false);
   const [month, setMonth] = useState("");
+  const [view, setView] = useState<"list" | "calendar">("list");
+  const [calendarMonth, setCalendarMonth] = useState(() => istanbulToday().slice(0, 7));
 
   const mine = (ws?.tasks ?? []).filter((t) => (t.boardId === null && t.creatorId === me.id) || isAssignedToMe(t, me, ws));
-  const shown = mine
+  const filtered = mine
     .filter((t) => (filter === "personal" ? t.boardId === null : filter === "assigned" ? t.boardId !== null : true))
-    .filter((t) => !hideDone || t.status !== "done")
-    .filter((t) => matchesTaskMonth(t, month));
+    .filter((t) => !hideDone || t.status !== "done");
+  const shown = filtered.filter((t) => matchesTaskMonth(t, month));
 
   const setStatus = (t: Task, status: Task["status"]) =>
     update.mutate({ id: t.id, data: { status } }, { onSuccess: () => invalidate(), onError: (e) => toast({ title: "Durum değiştirilemedi", description: errMsg(e), variant: "destructive" }) });
@@ -38,18 +42,24 @@ export default function MyTasksPage() {
       <PageHeader title="Görevlerim." sub="Kişisel işleriniz ve size atanan şirket görevleri." actions={<button className="pill pill-primary" onClick={() => newTask()} data-testid="button-new-personal"><Plus className="h-4 w-4" />Kişisel görev</button>} />
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Segmented value={filter} onChange={setFilter} options={[{ value: "all", label: `Tümü ${mine.length}` }, { value: "personal", label: "Kişisel" }, { value: "assigned", label: "Atanan" }]} />
-        <TaskMonthFilter value={month} onChange={setMonth} />
+        <Segmented value={view} onChange={(next) => {
+          if (next === "calendar" && month && month !== "undated") setCalendarMonth(month);
+          setView(next);
+        }} options={[{ value: "list", label: "Liste" }, { value: "calendar", label: "Takvim" }]} />
+        {view === "list" && <TaskMonthFilter value={month} onChange={setMonth} />}
         <button className={cn("pill pill-sm ml-auto", hideDone ? "pill-primary" : "pill-soft")} onClick={() => setHideDone(!hideDone)} aria-pressed={hideDone} data-testid="button-hide-done">Tamamlananları gizle</button>
       </div>
       <div className="mb-5">
         <QuickTask />
-        {month && <p className="mt-2 px-1 text-xs text-muted-foreground">Ay filtresi bitiş tarihini esas alır. Tarihsiz yeni görevler için “Tüm tarihler” veya “Tarihsiz” seçin.</p>}
+        {view === "list" && month && <p className="mt-2 px-1 text-xs text-muted-foreground">Ay filtresi bitiş tarihini esas alır. Tarihsiz yeni görevler için “Tüm tarihler” veya “Tarihsiz” seçin.</p>}
       </div>
 
       {isLoading ? (
         <div className="space-y-2">{[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-14 rounded-2xl" />)}</div>
       ) : isError ? (
         <ErrorState onRetry={() => refetch()} />
+      ) : view === "calendar" && ws ? (
+        <TaskCalendar tasks={filtered} ws={ws} month={calendarMonth} onMonthChange={setCalendarMonth} />
       ) : shown.length === 0 ? (
         <EmptyState icon={<CheckSquare className="h-5 w-5" />} title={mine.length ? "Bu filtrede görev yok." : "Listeniz boş."} text="Kendinize kişisel bir görev ekleyin. Yalnızca siz görürsünüz." action={<button className="pill pill-primary" onClick={() => newTask()}><Plus className="h-4 w-4" />Kişisel görev</button>} />
       ) : (

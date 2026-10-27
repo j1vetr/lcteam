@@ -22,11 +22,13 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { AvatarStack, ChipPicker, EmptyState, ErrorState, Field, PriorityTag, UserAvatar } from "@/components/bits";
+import { AvatarStack, ChipPicker, EmptyState, ErrorState, Field, PriorityTag, Segmented, UserAvatar } from "@/components/bits";
 import { dueState, errMsg, fmtDate, isAssignedToMe, useInvalidateAll, useMe, useTaskUi, useWorkspace } from "@/lib/app";
 import { cn } from "@/lib/utils";
 import { QuickTask } from "@/components/quick-task";
 import { matchesTaskMonth, TaskMonthFilter } from "@/components/task-month-filter";
+import { TaskCalendar } from "@/components/task-calendar";
+import { istanbulToday } from "@/lib/task-calendar";
 
 export default function BoardPage() {
   const params = useParams<{ id?: string }>();
@@ -38,6 +40,8 @@ export default function BoardPage() {
   const [query, setQuery] = useState("");
   const [mineOnly, setMineOnly] = useState(false);
   const [month, setMonth] = useState("");
+  const [view, setView] = useState<"board" | "calendar">("board");
+  const [calendarMonth, setCalendarMonth] = useState(() => istanbulToday().slice(0, 7));
   const [boardDialog, setBoardDialog] = useState<{ open: boolean; board: Board | null }>({ open: false, board: null });
   const [columnDialog, setColumnDialog] = useState<{ open: boolean; column: Column | null }>({ open: false, column: null });
   const [confirmBoard, setConfirmBoard] = useState(false);
@@ -63,6 +67,11 @@ export default function BoardPage() {
   if (isError || !ws) return <div className="p-6"><ErrorState onRetry={() => refetch()} /></div>;
 
   const boardTasks = board ? ws.tasks.filter((t) => t.boardId === board.id) : [];
+  const q = query.trim().toLocaleLowerCase("tr-TR");
+  const calendarTasks = boardTasks.filter((t) =>
+    (!q || t.title.toLocaleLowerCase("tr-TR").includes(q) || t.labels.some((l) => l.toLocaleLowerCase("tr-TR").includes(q))) &&
+    (!mineOnly || isAssignedToMe(t, me, ws)),
+  );
 
   return (
     <div className="flex min-h-[calc(100dvh-56px)] flex-col md:min-h-[100dvh]">
@@ -126,10 +135,14 @@ export default function BoardPage() {
             <button className={cn("pill pill-sm h-9", mineOnly ? "pill-primary" : "pill-soft")} onClick={() => setMineOnly(!mineOnly)} aria-pressed={mineOnly} data-testid="button-filter-mine">
               Bana atananlar
             </button>
-            <TaskMonthFilter value={month} onChange={setMonth} />
+            <Segmented value={view} onChange={(next) => {
+              if (next === "calendar" && month && month !== "undated") setCalendarMonth(month);
+              setView(next);
+            }} options={[{ value: "board", label: "Pano" }, { value: "calendar", label: "Takvim" }]} />
+            {view === "board" && <TaskMonthFilter value={month} onChange={setMonth} />}
           </div>
         )}
-        {month && <p className="mt-2 text-xs text-muted-foreground">Filtre bitiş tarihine göredir. Tarihsiz yeni görevleri görmek için “Tüm tarihler” veya “Tarihsiz” seçin.</p>}
+        {view === "board" && month && <p className="mt-2 text-xs text-muted-foreground">Filtre bitiş tarihine göredir. Tarihsiz yeni görevleri görmek için “Tüm tarihler” veya “Tarihsiz” seçin.</p>}
       </div>
 
       {!board ? (
@@ -141,6 +154,10 @@ export default function BoardPage() {
           ) : (
             <EmptyState icon={<Kanban className="h-5 w-5" />} title="Henüz bir panoya eklenmediniz." text="Yöneticiniz sizi bir panoya eklediğinde burada görünecek. Bu arada kişisel görevlerinizi takip edebilirsiniz." action={<button className="pill pill-primary" onClick={() => newTask()}><Plus className="h-4 w-4" />Kişisel görev ekle</button>} />
           )}
+        </div>
+      ) : view === "calendar" ? (
+        <div className="min-w-0 p-4 md:p-6">
+          <TaskCalendar tasks={calendarTasks} ws={ws} month={calendarMonth} onMonthChange={setCalendarMonth} />
         </div>
       ) : (
         <KanbanBoard key={board.id} ws={ws} board={board} tasks={boardTasks} query={query} mineOnly={mineOnly} month={month} onEditColumn={(c) => setColumnDialog({ open: true, column: c })} onAddColumn={() => setColumnDialog({ open: true, column: null })} />
