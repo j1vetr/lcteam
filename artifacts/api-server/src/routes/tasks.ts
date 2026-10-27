@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { canDeleteTask } from "../lib/task-permissions";
 import { and, asc, desc, eq, inArray, isNotNull, ne, sql } from "drizzle-orm";
 import { db, tasks, columns, activity, notifications, comments, teams, type TaskRow } from "@workspace/db";
 import { CreateTaskBody, UpdateTaskBody, AddCommentBody, CreateTaskResponse, GetTaskResponse, AddCommentResponse } from "@workspace/api-zod";
@@ -147,7 +148,7 @@ router.patch("/tasks/:id", async (req, res): Promise<void> => {
 router.delete("/tasks/:id", async (req, res): Promise<void> => {
   const user = userOf(req);
   const { task } = await visibleTask(idParam(req), user);
-  if (user.role !== "admin" && !(task.boardId === null && task.creatorId === user.id)) fail(403, "Şirket görevlerini yalnızca yönetici silebilir.");
+  if (!canDeleteTask(user, task)) fail(403, "Bu görevi silme yetkiniz yok. Şirket görevlerini yalnızca yönetici silebilir.");
   await db.delete(tasks).where(eq(tasks.id, task.id));
   res.json({ success: true });
 });

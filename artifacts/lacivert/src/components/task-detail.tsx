@@ -90,6 +90,7 @@ function TaskDetailBody({ id, onClose }: { id: number; onClose: () => void }) {
 
   const isPersonal = task.boardId === null;
   const canEdit = isPersonal ? task.creatorId === me.id : me.role === "admin";
+  const canDelete = isPersonal ? task.creatorId === me.id : me.role === "admin";
   const canProgress = canEdit || isAssignedToMe(task, me, ws);
   const board = ws?.boards.find((b) => b.id === task.boardId);
   const columns = (ws?.columns ?? []).filter((c) => c.boardId === task.boardId).sort((a, b) => a.position - b.position);
@@ -155,7 +156,7 @@ function TaskDetailBody({ id, onClose }: { id: number; onClose: () => void }) {
           <span className="eyebrow">#{task.id}</span>
         </span>
         <div className="flex items-center gap-1.5">
-          {canEdit && (
+          {canDelete && (
             <button className="pill pill-sm pill-soft text-destructive" onClick={() => setConfirmDelete(true)} data-testid="button-delete-task">
               <Trash2 className="h-3.5 w-3.5" />Sil
             </button>
@@ -167,6 +168,11 @@ function TaskDetailBody({ id, onClose }: { id: number; onClose: () => void }) {
       </div>
 
       <div className="space-y-6 px-6 py-5">
+        {!isPersonal && me.role !== "admin" && (
+          <p className="rounded-xl bg-muted px-3 py-2 text-[12px] text-muted-foreground" data-testid="text-task-delete-restriction">
+            Pano görevlerini yalnızca yönetici silebilir.
+          </p>
+        )}
         {canEdit ? (
           <textarea
             className="heading w-full resize-none rounded-xl bg-transparent text-[22px] outline-none focus:bg-muted/60 focus:px-2"
@@ -381,7 +387,7 @@ function TaskDetailBody({ id, onClose }: { id: number; onClose: () => void }) {
         </section>
       </div>
 
-      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+      <AlertDialog open={confirmDelete && canDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent className="rounded-3xl">
           <AlertDialogHeader>
             <AlertDialogTitle className="heading">Görev silinsin mi?</AlertDialogTitle>
@@ -393,6 +399,7 @@ function TaskDetailBody({ id, onClose }: { id: number; onClose: () => void }) {
               className="rounded-full bg-destructive hover:bg-destructive/90"
               onClick={(e) => {
                 e.preventDefault();
+                if (!canDelete || del.isPending) return;
                 del.mutate(
                   { id: task.id },
                   {

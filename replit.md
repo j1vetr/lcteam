@@ -42,6 +42,7 @@ Lacivert Teknoloji için ekip, pano ve kişisel görev yönetimi uygulaması.
 
 - Admins manage members, teams, boards and columns, and assign tasks to themselves, members or teams.
 - Members create private self-assigned tasks and update progress on tasks assigned to them or their teams.
+- Members must never delete company board tasks, including when opened from notifications. Only admins may delete board tasks. Personal task deletion remains limited to its creator.
 - Tasks support descriptions, priorities, dates, labels, checklists, comments and activity.
 - Dashboard and notifications use real authorized workspace data.
 
