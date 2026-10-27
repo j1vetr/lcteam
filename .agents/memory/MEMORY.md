@@ -1,1 +1,2 @@
 - [Codegen compatibility](codegen-compatibility.md) — Orval can infer the wrong React Query major in this monorepo, so keep compatibility explicit.
+- [Native build approvals](native-build-approvals.md) — a successful Argon2 runtime check does not prove pnpm approved its build scripts on Ubuntu.
