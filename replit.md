@@ -63,6 +63,15 @@ Lacivert Teknoloji için ekip, pano ve kişisel görev yönetimi uygulaması.
 - Authentication cookies are HTTP-only, SameSite=Lax and secure on HTTPS. Passwords use Argon2id.
 - Signed-in frontend screens require an actual account. Never add an auth bypass for screenshots.
 
+## Ubuntu hosting requirements
+
+- GitHub repository: https://github.com/j1vetr/lcteam.
+- Domains: team.lacivertteknoloji.com and www.team.lacivertteknoloji.com.
+- API port: 1453. Serve the built frontend through Nginx.
+- Nginx site filenames must end in `.conf`. Let Certbot generate SSL configuration.
+- Reuse the server's existing PM2 installation and account. Do not create multiple PM2 daemons or duplicate processes for this app.
+- Configure PostgreSQL locally on Ubuntu, with generated credentials kept outside Git.
+
 ## Pointers
 
 - See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
