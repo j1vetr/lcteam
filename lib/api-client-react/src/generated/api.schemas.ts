@@ -188,6 +188,63 @@ export interface Column {
   isDone: boolean;
 }
 
+export type PersonalColumnStatus = typeof PersonalColumnStatus[keyof typeof PersonalColumnStatus];
+
+
+export const PersonalColumnStatus = {
+  todo: 'todo',
+  doing: 'doing',
+  review: 'review',
+  done: 'done',
+} as const;
+
+export interface PersonalColumn {
+  id: number;
+  name: string;
+  position: number;
+  status: PersonalColumnStatus;
+}
+
+export type PersonalColumnInputStatus = typeof PersonalColumnInputStatus[keyof typeof PersonalColumnInputStatus];
+
+
+export const PersonalColumnInputStatus = {
+  todo: 'todo',
+  doing: 'doing',
+  review: 'review',
+  done: 'done',
+} as const;
+
+export interface PersonalColumnInput {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  name: string;
+  status: PersonalColumnInputStatus;
+}
+
+export type PersonalColumnUpdateStatus = typeof PersonalColumnUpdateStatus[keyof typeof PersonalColumnUpdateStatus];
+
+
+export const PersonalColumnUpdateStatus = {
+  todo: 'todo',
+  doing: 'doing',
+  review: 'review',
+  done: 'done',
+} as const;
+
+export interface PersonalColumnUpdate {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  name?: string;
+  status?: PersonalColumnUpdateStatus;
+  /** @minimum 0 */
+  position?: number;
+}
+
 export interface ChecklistItem {
   /** @maxLength 100 */
   id: string;
@@ -231,6 +288,8 @@ export interface TaskInput {
   boardId: number | null;
   /** @nullable */
   columnId?: number | null;
+  /** @nullable */
+  personalColumnId?: number | null;
   priority?: TaskInputPriority;
   status?: TaskInputStatus;
   /** @maxItems 500 */
@@ -280,6 +339,8 @@ export interface TaskUpdate {
   description?: string;
   /** @nullable */
   columnId?: number | null;
+  /** @nullable */
+  personalColumnId?: number | null;
   priority?: TaskUpdatePriority;
   status?: TaskUpdateStatus;
   /** @maxItems 500 */
@@ -328,6 +389,8 @@ export interface Task {
   boardId: number | null;
   /** @nullable */
   columnId: number | null;
+  /** @nullable */
+  personalColumnId?: number | null;
   priority: TaskPriority;
   status: TaskStatus;
   assigneeIds: number[];
@@ -388,6 +451,7 @@ export interface Workspace {
   teams: Team[];
   boards: Board[];
   columns: Column[];
+  personalColumns: PersonalColumn[];
   tasks: Task[];
 }
 

@@ -137,12 +137,19 @@ export const GetWorkspaceResponse = zod.object({
   "position": zod.number().int(),
   "isDone": zod.boolean()
 })),
+  "personalColumns": zod.array(zod.object({
+  "id": zod.number().int(),
+  "name": zod.string(),
+  "position": zod.number().int(),
+  "status": zod.enum(['todo', 'doing', 'review', 'done'])
+})),
   "tasks": zod.array(zod.object({
   "id": zod.number().int(),
   "title": zod.string(),
   "description": zod.string(),
   "boardId": zod.number().int().nullable(),
   "columnId": zod.number().int().nullable(),
+  "personalColumnId": zod.number().int().nullish(),
   "priority": zod.enum(['low', 'medium', 'high', 'urgent']),
   "status": zod.enum(['todo', 'doing', 'review', 'done']),
   "assigneeIds": zod.array(zod.number().int()),
@@ -471,6 +478,62 @@ export const DeleteColumnResponse = zod.object({
 })
 
 
+export const createPersonalColumnBodyNameMax = 100;
+
+
+
+export const CreatePersonalColumnBody = zod.object({
+  "name": zod.string().min(1).max(createPersonalColumnBodyNameMax),
+  "status": zod.enum(['todo', 'doing', 'review', 'done'])
+})
+
+export const CreatePersonalColumnResponse = zod.object({
+  "id": zod.number().int(),
+  "name": zod.string(),
+  "position": zod.number().int(),
+  "status": zod.enum(['todo', 'doing', 'review', 'done'])
+})
+
+
+
+
+
+export const UpdatePersonalColumnParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const updatePersonalColumnBodyNameMax = 100;
+
+export const updatePersonalColumnBodyPositionMin = 0;
+
+
+
+export const UpdatePersonalColumnBody = zod.object({
+  "name": zod.string().min(1).max(updatePersonalColumnBodyNameMax).optional(),
+  "status": zod.enum(['todo', 'doing', 'review', 'done']).optional(),
+  "position": zod.number().int().min(updatePersonalColumnBodyPositionMin).optional()
+})
+
+export const UpdatePersonalColumnResponse = zod.object({
+  "id": zod.number().int(),
+  "name": zod.string(),
+  "position": zod.number().int(),
+  "status": zod.enum(['todo', 'doing', 'review', 'done'])
+})
+
+
+
+
+
+export const DeletePersonalColumnParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const DeletePersonalColumnResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
 export const createTaskBodyTitleMax = 200;
 
 export const createTaskBodyDescriptionMax = 20000;
@@ -496,6 +559,7 @@ export const CreateTaskBody = zod.object({
   "description": zod.string().max(createTaskBodyDescriptionMax).optional(),
   "boardId": zod.number().int().nullable(),
   "columnId": zod.number().int().nullish(),
+  "personalColumnId": zod.number().int().nullish(),
   "priority": zod.enum(['low', 'medium', 'high', 'urgent']).optional(),
   "status": zod.enum(['todo', 'doing', 'review', 'done']).optional(),
   "assigneeIds": zod.array(zod.number().int()).max(createTaskBodyAssigneeIdsMax),
@@ -522,6 +586,7 @@ export const CreateTaskResponse = zod.object({
   "description": zod.string(),
   "boardId": zod.number().int().nullable(),
   "columnId": zod.number().int().nullable(),
+  "personalColumnId": zod.number().int().nullish(),
   "priority": zod.enum(['low', 'medium', 'high', 'urgent']),
   "status": zod.enum(['todo', 'doing', 'review', 'done']),
   "assigneeIds": zod.array(zod.number().int()),
@@ -562,6 +627,7 @@ export const GetTaskResponse = zod.object({
   "description": zod.string(),
   "boardId": zod.number().int().nullable(),
   "columnId": zod.number().int().nullable(),
+  "personalColumnId": zod.number().int().nullish(),
   "priority": zod.enum(['low', 'medium', 'high', 'urgent']),
   "status": zod.enum(['todo', 'doing', 'review', 'done']),
   "assigneeIds": zod.array(zod.number().int()),
@@ -628,6 +694,7 @@ export const UpdateTaskBody = zod.object({
   "title": zod.string().min(1).max(updateTaskBodyTitleMax).optional(),
   "description": zod.string().max(updateTaskBodyDescriptionMax).optional(),
   "columnId": zod.number().int().nullish(),
+  "personalColumnId": zod.number().int().nullish(),
   "priority": zod.enum(['low', 'medium', 'high', 'urgent']).optional(),
   "status": zod.enum(['todo', 'doing', 'review', 'done']).optional(),
   "assigneeIds": zod.array(zod.number().int()).max(updateTaskBodyAssigneeIdsMax).optional(),
@@ -655,6 +722,7 @@ export const UpdateTaskResponse = zod.object({
   "description": zod.string(),
   "boardId": zod.number().int().nullable(),
   "columnId": zod.number().int().nullable(),
+  "personalColumnId": zod.number().int().nullish(),
   "priority": zod.enum(['low', 'medium', 'high', 'urgent']),
   "status": zod.enum(['todo', 'doing', 'review', 'done']),
   "assigneeIds": zod.array(zod.number().int()),

@@ -1,11 +1,12 @@
 import { Router, type IRouter } from "express";
 import { canDeleteTask } from "../lib/task-permissions";
-import { and, asc, desc, eq, inArray, isNotNull, ne, sql } from "drizzle-orm";
-import { db, tasks, columns, activity, notifications, comments, teams, type TaskRow } from "@workspace/db";
+import { and, asc, desc, eq, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
+import { db, tasks, columns, personalColumns, activity, notifications, comments, teams, type TaskRow } from "@workspace/db";
 import { CreateTaskBody, UpdateTaskBody, AddCommentBody, CreateTaskResponse, GetTaskResponse, AddCommentResponse } from "@workspace/api-zod";
 import { fail, parse, idParam } from "../lib/errors";
 import { userOf } from "../lib/auth";
 import { visibleTask, workspace, validateIds, serialize, dateValue, validDates, isAssigned, nonBlank } from "../lib/workspace";
+import { lockPersonalBoard } from "../lib/personal-columns";
 
 const router: IRouter = Router();
 function statusForColumn(column: { isDone: boolean; position: number }): TaskRow["status"] {
@@ -32,6 +33,7 @@ router.post("/tasks", async (req, res): Promise<void> => {
     if (teamIds.length || assigneeIds.some(id => id !== user.id)) fail(400, "Kişisel görev yalnızca kendinize atanabilir.");
     if (!assigneeIds.length) assigneeIds.push(user.id);
   } else if (user.role !== "admin") fail(403, "Üyeler yalnızca kendilerine kişisel görev oluşturabilir.");
+  if (data.boardId !== null && data.personalColumnId != null) fail(400, "Şirket görevine kişisel pano sütunu atanamaz.");
   if (teamIds.length && !assigneeIds.length) fail(400, "Ekip görevi için en az bir sorumlu kişi seçin.");
   await validateIds(assigneeIds, teamIds);
   let columnId: number | null = null;
@@ -45,11 +47,25 @@ router.post("/tasks", async (req, res): Promise<void> => {
     columnId = selected.id;
     status = statusForColumn(selected);
   }
-  const sameColumn = w.tasks.filter(t => t.boardId === data.boardId && t.columnId === columnId);
-  const position = Math.max(-1, ...sameColumn.map(t => t.position)) + 1;
   const task = await db.transaction(async tx => {
+    let personalColumnId: number | null = null;
+    if (data.boardId === null) {
+      await lockPersonalBoard(tx, user.id);
+      const available = await tx.select().from(personalColumns).where(eq(personalColumns.userId, user.id))
+        .orderBy(asc(personalColumns.position), asc(personalColumns.id));
+      const target = data.personalColumnId != null
+        ? available.find(c => c.id === data.personalColumnId)
+        : available.find(c => c.status === status) ?? available[0];
+      if (!target) fail(400, "Geçerli bir kişisel pano sütunu seçin.");
+      personalColumnId = target.id;
+      status = target.status;
+    }
+    const sameColumn = data.boardId === null
+      ? await tx.select({ position: tasks.position }).from(tasks).where(and(eq(tasks.creatorId, user.id), eq(tasks.personalColumnId, personalColumnId!)))
+      : w.tasks.filter(t => t.boardId === data.boardId && t.columnId === columnId);
+    const position = Math.max(-1, ...sameColumn.map(t => t.position)) + 1;
     const [created] = await tx.insert(tasks).values({
-      title: nonBlank(data.title), description: data.description ?? "", boardId: data.boardId, columnId, creatorId: user.id,
+      title: nonBlank(data.title), description: data.description ?? "", boardId: data.boardId, columnId, personalColumnId, creatorId: user.id,
       assigneeIds, teamIds, priority: data.priority ?? "medium", status, startDate, dueDate,
       labels: data.labels ?? [], checklist: data.checklist ?? [], position,
     }).returning();
@@ -74,6 +90,7 @@ router.patch("/tasks/:id", async (req, res): Promise<void> => {
   const data = parse(UpdateTaskBody, req.body);
   const allTeams = await db.select().from(teams);
   const personal = task.boardId === null && task.creatorId === user.id;
+  if (!personal && data.personalColumnId != null) fail(400, "Şirket görevine kişisel pano sütunu atanamaz.");
   const assigned = isAssigned(task, user, allTeams);
   if (!personal && user.role !== "admin" && !assigned) fail(403, "Yalnızca size veya ekibinize atanmış görevleri güncelleyebilirsiniz.");
   const startDate = dateValue(req.body.startDate);
@@ -112,15 +129,38 @@ router.patch("/tasks/:id", async (req, res): Promise<void> => {
   const changedAssignments = data.assigneeIds !== undefined || data.teamIds !== undefined;
   await db.transaction(async tx => {
     // Serialize moves within the board (or this user's private workspace).
-    await tx.execute(sql`SELECT pg_advisory_xact_lock(${task.boardId === null ? -user.id : task.boardId})`);
+    let personalColumnId: number | null = null;
+    if (personal) {
+      await lockPersonalBoard(tx, user.id);
+      const available = await tx.select().from(personalColumns).where(eq(personalColumns.userId, user.id))
+        .orderBy(asc(personalColumns.position), asc(personalColumns.id));
+      const target = data.personalColumnId !== undefined
+        ? available.find(c => c.id === data.personalColumnId)
+        : data.status !== undefined
+          ? available.find(c => c.status === data.status)
+          : available.find(c => c.id === task.personalColumnId);
+      if (!target) fail(400, "Bu işlem için uygun bir kişisel pano sütunu seçin.");
+      personalColumnId = target.id;
+      status = target.status;
+    } else {
+      await tx.execute(sql`SELECT pg_advisory_xact_lock(${task.boardId})`);
+    }
     const { startDate: _start, dueDate: _due, ...other } = data;
     const [updated] = await tx.update(tasks).set({
       ...other, ...(data.title !== undefined ? { title: nonBlank(data.title) } : {}),
       ...(startDate !== undefined ? { startDate } : {}), ...(dueDate !== undefined ? { dueDate } : {}),
-      assigneeIds, teamIds, columnId, status, updatedAt: new Date(),
+      assigneeIds, teamIds, columnId, personalColumnId, status, updatedAt: new Date(),
     }).where(eq(tasks.id, task.id)).returning();
     if (!updated) fail(404, "Görev artık mevcut değil.");
-    if (data.position !== undefined || columnId !== task.columnId) {
+    if (data.position !== undefined || columnId !== task.columnId || personalColumnId !== task.personalColumnId) {
+      if (personal) {
+        const destination = await tx.select({ id: tasks.id }).from(tasks)
+          .where(and(isNull(tasks.boardId), eq(tasks.creatorId, user.id), eq(tasks.personalColumnId, personalColumnId!), ne(tasks.id, task.id)))
+          .orderBy(asc(tasks.position), asc(tasks.id));
+        const index = Math.min(destination.length, Math.max(0, Math.trunc(data.position ?? destination.length)));
+        destination.splice(index, 0, { id: task.id });
+        for (const [position, row] of destination.entries()) await tx.update(tasks).set({ position }).where(eq(tasks.id, row.id));
+      }
       if (columnId !== null) {
         const destination = await tx.select({ id: tasks.id }).from(tasks)
           .where(and(eq(tasks.columnId, columnId), ne(tasks.id, task.id)))
@@ -134,7 +174,7 @@ router.patch("/tasks/:id", async (req, res): Promise<void> => {
         for (const [position, row] of source.entries()) await tx.update(tasks).set({ position }).where(eq(tasks.id, row.id));
       }
     }
-    const message = status !== task.status ? `Görevin durumunu güncelledi.` : columnId !== task.columnId ? "Görevi başka bir sütuna taşıdı." : "Görevi güncelledi.";
+    const message = status !== task.status ? `Görevin durumunu güncelledi.` : columnId !== task.columnId || personalColumnId !== task.personalColumnId ? "Görevi başka bir sütuna taşıdı." : "Görevi güncelledi.";
     await tx.insert(activity).values({ taskId: task.id, userId: user.id, message });
     if (dueDate !== undefined || status === "done") await tx.delete(notifications).where(and(eq(notifications.taskId, task.id), isNotNull(notifications.reminderKey)));
     if (changedAssignments) {

@@ -7,6 +7,7 @@
  */
 import type { Board } from './board';
 import type { Column } from './column';
+import type { PersonalColumn } from './personalColumn';
 import type { Task } from './task';
 import type { Team } from './team';
 import type { User } from './user';
@@ -16,5 +17,6 @@ export interface Workspace {
   teams: Team[];
   boards: Board[];
   columns: Column[];
+  personalColumns: PersonalColumn[];
   tasks: Task[];
 }

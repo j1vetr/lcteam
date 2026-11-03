@@ -21,6 +21,8 @@ export interface TaskInput {
   boardId: number | null;
   /** @nullable */
   columnId?: number | null;
+  /** @nullable */
+  personalColumnId?: number | null;
   priority?: TaskInputPriority;
   status?: TaskInputStatus;
   /** @maxItems 500 */

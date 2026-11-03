@@ -17,6 +17,8 @@ export interface Task {
   boardId: number | null;
   /** @nullable */
   columnId: number | null;
+  /** @nullable */
+  personalColumnId?: number | null;
   priority: TaskPriority;
   status: TaskStatus;
   assigneeIds: number[];

@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { href: "/", label: "Panolar", icon: Kanban },
   { href: "/overview", label: "Genel bakış", icon: LayoutDashboard },
-  { href: "/my-tasks", label: "Görevlerim", icon: CheckSquare },
+  { href: "/my-tasks", label: "Kişisel Pano", icon: CheckSquare },
   { href: "/teams", label: "Ekipler", icon: Users },
   { href: "/notifications", label: "Bildirimler", icon: Bell },
   { href: "/settings", label: "Ayarlar", icon: Settings },

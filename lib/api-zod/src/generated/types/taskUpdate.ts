@@ -19,6 +19,8 @@ export interface TaskUpdate {
   description?: string;
   /** @nullable */
   columnId?: number | null;
+  /** @nullable */
+  personalColumnId?: number | null;
   priority?: TaskUpdatePriority;
   status?: TaskUpdateStatus;
   /** @maxItems 500 */

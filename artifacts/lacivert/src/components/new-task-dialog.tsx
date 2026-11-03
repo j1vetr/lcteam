@@ -4,7 +4,8 @@ import { useCreateTask, type Task } from "@workspace/api-client-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { ChipPicker, Field, Segmented, UserAvatar } from "@/components/bits";
-import { errMsg, PRIORITY, PRIORITY_ORDER, STATUS, STATUS_ORDER, useInvalidateAll, useMe, useWorkspace, useTaskUi, type NewTaskDefaults } from "@/lib/app";
+import { errMsg, PRIORITY, PRIORITY_ORDER, STATUS, useInvalidateAll, useMe, useWorkspace, useTaskUi, type NewTaskDefaults } from "@/lib/app";
+import { sortedPersonalColumns } from "@/components/personal-board";
 import { calendarDayLabel, istanbulToday, shortcutDueDate, type DueDateShortcut } from "@/lib/task-calendar";
 
 const DUE_SHORTCUTS: { value: DueDateShortcut; label: string }[] = [
@@ -28,7 +29,7 @@ export function NewTaskDialog({ open, onOpenChange, defaults }: { open: boolean;
   const [description, setDescription] = useState("");
   const [boardId, setBoardId] = useState<number | null>(null);
   const [columnId, setColumnId] = useState<number | null>(null);
-  const [status, setStatus] = useState<Task["status"]>("todo");
+  const [personalColumnId, setPersonalColumnId] = useState<number | null>(null);
   const [priority, setPriority] = useState<Task["priority"]>("medium");
   const [startDate, setStartDate] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -46,7 +47,7 @@ export function NewTaskDialog({ open, onOpenChange, defaults }: { open: boolean;
     setColumnId(defaults.columnId ?? null);
     setTitle("");
     setDescription("");
-    setStatus("todo");
+    setPersonalColumnId(sortedPersonalColumns(ws)[0]?.id ?? null);
     setPriority("medium");
     setStartDate("");
     setDueDate("");
@@ -65,6 +66,11 @@ export function NewTaskDialog({ open, onOpenChange, defaults }: { open: boolean;
     if (columns.length && !columns.some((c) => c.id === columnId)) setColumnId(columns[0].id);
   }, [columns, columnId]);
 
+  const pcols = useMemo(() => sortedPersonalColumns(ws), [ws]);
+  useEffect(() => {
+    if (pcols.length && !pcols.some((c) => c.id === personalColumnId)) setPersonalColumnId(pcols[0].id);
+  }, [pcols, personalColumnId]);
+
   const activeUsers = (ws?.users ?? []).filter((u) => u.active);
 
   const submit = (e: React.FormEvent) => {
@@ -82,7 +88,7 @@ export function NewTaskDialog({ open, onOpenChange, defaults }: { open: boolean;
           description,
           boardId: isBoard ? boardId : null,
           columnId: isBoard ? columnId : null,
-          status: isBoard ? undefined : status,
+          ...(isBoard ? {} : { personalColumnId: personalColumnId ?? undefined, status: pcols.find((c) => c.id === personalColumnId)?.status }),
           priority,
           assigneeIds: isBoard ? assigneeIds : [me.id],
           teamIds: isBoard ? teamIds : [],
@@ -146,10 +152,11 @@ export function NewTaskDialog({ open, onOpenChange, defaults }: { open: boolean;
                 </Field>
               </div>
             ) : (
-              <Field label="Durum">
-                <select className="field" value={status} onChange={(e) => setStatus(e.target.value as Task["status"])} data-testid="select-task-status">
-                  {STATUS_ORDER.map((s) => (
-                    <option key={s} value={s}>{STATUS[s]}</option>
+              <Field label="Sütun">
+                <select className="field" value={personalColumnId ?? ""} onChange={(e) => setPersonalColumnId(Number(e.target.value) || null)} data-testid="select-task-personal-column">
+                  {pcols.length === 0 && <option value="">Sütun yok</option>}
+                  {pcols.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name} ({STATUS[c.status]})</option>
                   ))}
                 </select>
               </Field>

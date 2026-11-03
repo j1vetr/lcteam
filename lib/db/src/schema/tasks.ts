@@ -2,6 +2,7 @@ import { pgTable, serial, text, integer, jsonb, timestamp, date, doublePrecision
 import { createInsertSchema } from "drizzle-zod";
 import { users } from "./users";
 import { boards, columns } from "./boards";
+import { personalColumns } from "./personal-columns";
 export type ChecklistEntry = { id: string; title: string; checked: boolean };
 export const tasks = pgTable("tasks", {
   id: serial("id").primaryKey(),
@@ -9,6 +10,7 @@ export const tasks = pgTable("tasks", {
   description: text("description").notNull().default(""),
   boardId: integer("board_id").references(() => boards.id, { onDelete: "restrict" }),
   columnId: integer("column_id").references(() => columns.id, { onDelete: "restrict" }),
+  personalColumnId: integer("personal_column_id").references(() => personalColumns.id, { onDelete: "restrict" }),
   creatorId: integer("creator_id").notNull().references(() => users.id),
   assigneeIds: integer("assignee_ids").array().notNull().default([]),
   teamIds: integer("team_ids").array().notNull().default([]),

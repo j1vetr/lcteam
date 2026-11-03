@@ -38,6 +38,9 @@ import type {
   LoginInput,
   Notification,
   PasswordInput,
+  PersonalColumn,
+  PersonalColumnInput,
+  PersonalColumnUpdate,
   Session,
   Success,
   Task,
@@ -1894,6 +1897,239 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getDeleteColumnMutationOptions(options), queryClient);
+    }
+
+export const getCreatePersonalColumnUrl = () => {
+
+
+
+
+  return `/api/personal-columns`
+}
+
+export const createPersonalColumn = async (personalColumnInput: PersonalColumnInput, options?: Parameters<typeof customFetch>[1]): Promise<PersonalColumn> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<PersonalColumn>(getCreatePersonalColumnUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(personalColumnInput)
+  }
+);}
+
+
+
+
+
+export const getCreatePersonalColumnMutationKey = () => ['createPersonalColumn'] as const;
+
+export const getCreatePersonalColumnMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPersonalColumn>>, TError,CreatePersonalColumnMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createPersonalColumn>>, TError,CreatePersonalColumnMutationVariables, TContext> => {
+
+const mutationKey = getCreatePersonalColumnMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPersonalColumn>>, CreatePersonalColumnMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createPersonalColumn(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreatePersonalColumnMutationResult = NonNullable<Awaited<ReturnType<typeof createPersonalColumn>>>
+    export type CreatePersonalColumnMutationBody = BodyType<PersonalColumnInput>
+    export type CreatePersonalColumnMutationError = ErrorType<unknown>
+    export type CreatePersonalColumnMutationVariables = {data: BodyType<PersonalColumnInput>}
+
+    export const useCreatePersonalColumn = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPersonalColumn>>, TError,CreatePersonalColumnMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createPersonalColumn>>,
+        TError,
+        CreatePersonalColumnMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreatePersonalColumnMutationOptions(options), queryClient);
+    }
+
+export const getUpdatePersonalColumnUrl = (id: number,) => {
+
+
+
+
+  return `/api/personal-columns/${id}`
+}
+
+export const updatePersonalColumn = async (id: number,
+    personalColumnUpdate: PersonalColumnUpdate, options?: Parameters<typeof customFetch>[1]): Promise<PersonalColumn> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<PersonalColumn>(getUpdatePersonalColumnUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(personalColumnUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdatePersonalColumnMutationKey = () => ['updatePersonalColumn'] as const;
+
+export const getUpdatePersonalColumnMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePersonalColumn>>, TError,UpdatePersonalColumnMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updatePersonalColumn>>, TError,UpdatePersonalColumnMutationVariables, TContext> => {
+
+const mutationKey = getUpdatePersonalColumnMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updatePersonalColumn>>, UpdatePersonalColumnMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updatePersonalColumn(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdatePersonalColumnMutationResult = NonNullable<Awaited<ReturnType<typeof updatePersonalColumn>>>
+    export type UpdatePersonalColumnMutationBody = BodyType<PersonalColumnUpdate>
+    export type UpdatePersonalColumnMutationError = ErrorType<unknown>
+    export type UpdatePersonalColumnMutationVariables = {id: number;data: BodyType<PersonalColumnUpdate>}
+
+    export const useUpdatePersonalColumn = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePersonalColumn>>, TError,UpdatePersonalColumnMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updatePersonalColumn>>,
+        TError,
+        UpdatePersonalColumnMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdatePersonalColumnMutationOptions(options), queryClient);
+    }
+
+export const getDeletePersonalColumnUrl = (id: number,) => {
+
+
+
+
+  return `/api/personal-columns/${id}`
+}
+
+export const deletePersonalColumn = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<Success> => {
+
+  return customFetch<Success>(getDeletePersonalColumnUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeletePersonalColumnMutationKey = () => ['deletePersonalColumn'] as const;
+
+export const getDeletePersonalColumnMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePersonalColumn>>, TError,DeletePersonalColumnMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deletePersonalColumn>>, TError,DeletePersonalColumnMutationVariables, TContext> => {
+
+const mutationKey = getDeletePersonalColumnMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deletePersonalColumn>>, DeletePersonalColumnMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  deletePersonalColumn(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeletePersonalColumnMutationResult = NonNullable<Awaited<ReturnType<typeof deletePersonalColumn>>>
+
+    export type DeletePersonalColumnMutationError = ErrorType<unknown>
+    export type DeletePersonalColumnMutationVariables = {id: number}
+
+    export const useDeletePersonalColumn = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePersonalColumn>>, TError,DeletePersonalColumnMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deletePersonalColumn>>,
+        TError,
+        DeletePersonalColumnMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeletePersonalColumnMutationOptions(options), queryClient);
     }
 
 export const getCreateTaskUrl = () => {

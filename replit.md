@@ -42,6 +42,8 @@ Lacivert Teknoloji için ekip, pano ve kişisel görev yönetimi uygulaması.
 
 - Admins manage members, teams, boards and columns, and assign tasks to themselves, members or teams.
 - Members create private self-assigned tasks and update progress on tasks assigned to them or their teams.
+- Personal tasks are presented as a private Kanban board. Keep assigned company tasks separate from the personal board.
+- Users can add, rename and reorder their own personal columns and quickly add tasks to any column. Company board permissions remain unchanged.
 - Members must never delete company board tasks, including when opened from notifications. Only admins may delete board tasks. Personal task deletion remains limited to its creator.
 - Tasks support descriptions, priorities, dates, labels, checklists, comments and activity.
 - Dashboard and notifications use real authorized workspace data.
@@ -72,6 +74,7 @@ Lacivert Teknoloji için ekip, pano ve kişisel görev yönetimi uygulaması.
 - Nginx site filenames must end in `.conf`. Let Certbot generate SSL configuration.
 - Reuse the server's existing PM2 installation and account. Do not create multiple PM2 daemons or duplicate processes for this app.
 - Configure PostgreSQL locally on Ubuntu, with generated credentials kept outside Git.
+- Before deploying the customizable personal board, apply `scripts/migrations/personal-board-columns.sql` once using the app database owner. The update command does not run migrations automatically.
 
 ## Pointers
 

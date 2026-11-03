@@ -2,6 +2,7 @@ import { and, count, eq, inArray } from "drizzle-orm";
 import { db, users, teams, boards, columns, tasks, comments, type UserRow, type TaskRow, type BoardRow, type TeamRow } from "@workspace/db";
 import { publicUser } from "./auth";
 import { fail } from "./errors";
+import { ensurePersonalColumns } from "./personal-columns";
 
 export const serialize = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 export const todayIstanbul = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
@@ -15,6 +16,7 @@ export function boardVisible(board: BoardRow, user: UserRow, allTeams: TeamRow[]
     allTasks.some(t => t.boardId === board.id && isAssigned(t, user, allTeams));
 }
 export async function workspace(user: UserRow) {
+  const privateColumns = await ensurePersonalColumns(user.id);
   const [allUsers, allTeams, allBoards, allColumns, allTasks] = await Promise.all([
     db.select().from(users), db.select().from(teams), db.select().from(boards),
     db.select().from(columns).orderBy(columns.position, columns.id), db.select().from(tasks).orderBy(tasks.position, tasks.id),
@@ -30,6 +32,7 @@ export async function workspace(user: UserRow) {
     teams: allTeams.filter(t => user.role === "admin" || t.memberIds.includes(user.id) || visibleBoards.some(b => b.teamIds.includes(t.id))),
     boards: visibleBoards,
     columns: allColumns.filter(c => boardIds.has(c.boardId)),
+    personalColumns: privateColumns,
     tasks: visibleTasks.map(t => ({ ...t, commentCount: commentCounts.get(t.id) || 0 })),
   };
 }

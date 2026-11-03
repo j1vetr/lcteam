@@ -4,6 +4,7 @@ import authRouter from "./auth";
 import workspaceRouter from "./workspace";
 import managementRouter from "./management";
 import tasksRouter from "./tasks";
+import personalColumnsRouter from "./personal-columns";
 import { requireAuth } from "../lib/auth";
 
 const router: IRouter = Router();
@@ -14,5 +15,6 @@ router.use(requireAuth);
 router.use(workspaceRouter);
 router.use(managementRouter);
 router.use(tasksRouter);
+router.use(personalColumnsRouter);
 
 export default router;

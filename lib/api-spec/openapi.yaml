@@ -270,6 +270,44 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Success" }
+  /personal-columns:
+    post:
+      operationId: createPersonalColumn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PersonalColumnInput" }
+      responses:
+        "201":
+          description: Created in the current user's private board
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PersonalColumn" }
+  /personal-columns/{id}:
+    parameters:
+      - { $ref: "#/components/parameters/Id" }
+    patch:
+      operationId: updatePersonalColumn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PersonalColumnUpdate" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PersonalColumn" }
+    delete:
+      operationId: deletePersonalColumn
+      responses:
+        "200":
+          description: Deleted only when empty and not the last column
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Success" }
   /tasks:
     post:
       operationId: createTask
@@ -451,6 +489,26 @@ components:
         name: { type: string }
         position: { type: integer }
         isDone: { type: boolean }
+    PersonalColumn:
+      type: object
+      required: [id, name, position, status]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        position: { type: integer }
+        status: { type: string, enum: [todo, doing, review, done] }
+    PersonalColumnInput:
+      type: object
+      required: [name, status]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        status: { type: string, enum: [todo, doing, review, done] }
+    PersonalColumnUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        status: { type: string, enum: [todo, doing, review, done] }
+        position: { type: integer, minimum: 0 }
     ChecklistItem:
       type: object
       required: [id, title, checked]
@@ -466,6 +524,7 @@ components:
         description: { type: string, maxLength: 20000 }
         boardId: { type: [integer, "null"] }
         columnId: { type: [integer, "null"] }
+        personalColumnId: { type: [integer, "null"] }
         priority: { type: string, enum: [low, medium, high, urgent] }
         status: { type: string, enum: [todo, doing, review, done] }
         assigneeIds: { type: array, items: { type: integer }, uniqueItems: true, maxItems: 500 }
@@ -480,6 +539,7 @@ components:
         title: { type: string, minLength: 1, maxLength: 200 }
         description: { type: string, maxLength: 20000 }
         columnId: { type: [integer, "null"] }
+        personalColumnId: { type: [integer, "null"] }
         priority: { type: string, enum: [low, medium, high, urgent] }
         status: { type: string, enum: [todo, doing, review, done] }
         assigneeIds: { type: array, items: { type: integer }, uniqueItems: true, maxItems: 500 }
@@ -498,6 +558,7 @@ components:
         description: { type: string }
         boardId: { type: [integer, "null"] }
         columnId: { type: [integer, "null"] }
+        personalColumnId: { type: [integer, "null"] }
         priority: { type: string, enum: [low, medium, high, urgent] }
         status: { type: string, enum: [todo, doing, review, done] }
         assigneeIds: { type: array, items: { type: integer } }
@@ -552,12 +613,13 @@ components:
         activity: { type: array, items: { $ref: "#/components/schemas/Activity" } }
     Workspace:
       type: object
-      required: [users, teams, boards, columns, tasks]
+      required: [users, teams, boards, columns, personalColumns, tasks]
       properties:
         users: { type: array, items: { $ref: "#/components/schemas/User" } }
         teams: { type: array, items: { $ref: "#/components/schemas/Team" } }
         boards: { type: array, items: { $ref: "#/components/schemas/Board" } }
         columns: { type: array, items: { $ref: "#/components/schemas/Column" } }
+        personalColumns: { type: array, items: { $ref: "#/components/schemas/PersonalColumn" } }
         tasks: { type: array, items: { $ref: "#/components/schemas/Task" } }
     TeamSummary:
       type: object

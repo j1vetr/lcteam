@@ -1,11 +1,12 @@
 import { useRef, useState } from "react";
 import { Loader2, Plus } from "lucide-react";
-import { useCreateTask } from "@workspace/api-client-react";
+import { useCreateTask, type Task } from "@workspace/api-client-react";
 import { errMsg, useInvalidateAll, useMe } from "@/lib/app";
 import { useToast } from "@/hooks/use-toast";
 
-export function QuickTask({ boardId = null, columnId = null }: { boardId?: number | null; columnId?: number | null }) {
+export function QuickTask({ boardId = null, columnId = null, status = "todo", personalColumnId = null }: { boardId?: number | null; columnId?: number | null; status?: Task["status"]; personalColumnId?: number | null }) {
   const me = useMe();
+  const tid = columnId ?? (personalColumnId != null ? `personal-column-${personalColumnId}` : (status === "todo" ? "personal" : `personal-${status}`));
   const create = useCreateTask();
   const invalidate = useInvalidateAll();
   const { toast } = useToast();
@@ -20,7 +21,8 @@ export function QuickTask({ boardId = null, columnId = null }: { boardId?: numbe
       setError("");
       create.mutate({ data: {
         title: title.trim(), boardId, columnId, assigneeIds: [me.id],
-        teamIds: [], priority: "medium", status: "todo", labels: [], checklist: [],
+        teamIds: [], priority: "medium", status, labels: [], checklist: [],
+        ...(personalColumnId != null ? { personalColumnId } : {}),
       } }, {
         onSuccess: () => {
           invalidate();
@@ -32,8 +34,8 @@ export function QuickTask({ boardId = null, columnId = null }: { boardId?: numbe
       });
     }}>
       <div className="flex items-center gap-1">
-        <input ref={input} className="field min-w-0 flex-1 border-0 bg-transparent text-[13px] shadow-none" aria-label="Hızlı görev başlığı" placeholder={boardId ? "Görev yazın, Enter’a basın" : "Kişisel görev yazın, Enter’a basın"} value={title} maxLength={200} disabled={create.isPending} onChange={(e) => setTitle(e.target.value)} data-testid={`input-quick-task-${columnId ?? "personal"}`} />
-        <button className="pill pill-primary shrink-0 px-2.5" type="submit" aria-label="Görevi ekle" disabled={!title.trim() || create.isPending} data-testid={`button-quick-task-${columnId ?? "personal"}`}>
+        <input ref={input} className="field min-w-0 flex-1 border-0 bg-transparent text-[13px] shadow-none" aria-label="Hızlı görev başlığı" placeholder={boardId ? "Görev yazın, Enter’a basın" : "Kişisel görev yazın, Enter’a basın"} value={title} maxLength={200} disabled={create.isPending} onChange={(e) => setTitle(e.target.value)} data-testid={`input-quick-task-${tid}`} />
+        <button className="pill pill-primary shrink-0 px-2.5" type="submit" aria-label="Görevi ekle" disabled={!title.trim() || create.isPending} data-testid={`button-quick-task-${tid}`}>
           {create.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
         </button>
       </div>

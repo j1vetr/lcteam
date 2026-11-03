@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ChipPicker, Field, UserAvatar } from "@/components/bits";
 import { dateInput, errMsg, fmtDateLong, isAssignedToMe, PRIORITY, PRIORITY_ORDER, relTime, STATUS, STATUS_ORDER, useInvalidateAll, useMe, useWorkspace } from "@/lib/app";
 import { cn } from "@/lib/utils";
+import { personalColumnOf, sortedPersonalColumns } from "@/components/personal-board";
 
 export function TaskDetailSheet({ taskId, onClose }: { taskId: number | null; onClose: () => void }) {
   return (
@@ -94,6 +95,7 @@ function TaskDetailBody({ id, onClose }: { id: number; onClose: () => void }) {
   const canProgress = canEdit || isAssignedToMe(task, me, ws);
   const board = ws?.boards.find((b) => b.id === task.boardId);
   const columns = (ws?.columns ?? []).filter((c) => c.boardId === task.boardId).sort((a, b) => a.position - b.position);
+  const pcols = sortedPersonalColumns(ws);
   const userById = (uid: number) => ws?.users.find((u) => u.id === uid);
   const done = task.checklist.filter((c) => c.checked).length;
 
@@ -187,10 +189,10 @@ function TaskDetailBody({ id, onClose }: { id: number; onClose: () => void }) {
         )}
 
         <div className="grid grid-cols-2 gap-3 rounded-2xl bg-muted/60 p-4 sm:grid-cols-3">
-          <Field label={isPersonal ? "Durum" : "Sütun"}>
+          <Field label="Sütun">
             {isPersonal ? (
-              <select className="field bg-card" disabled={!canProgress} value={task.status} onChange={(e) => patch({ status: e.target.value as Task["status"] }, "Durum güncellendi")} data-testid="select-detail-status">
-                {STATUS_ORDER.map((s) => <option key={s} value={s}>{STATUS[s]}</option>)}
+              <select className="field bg-card" disabled={!canProgress || update.isPending} value={personalColumnOf(task, pcols)?.id ?? ""} onChange={(e) => patch({ personalColumnId: Number(e.target.value), position: 0 }, "Sütun güncellendi")} data-testid="select-detail-personal-column">
+                {pcols.map((c) => <option key={c.id} value={c.id}>{c.name} ({STATUS[c.status]})</option>)}
               </select>
             ) : (
               <select className="field bg-card" disabled={!canProgress} value={task.columnId ?? ""} onChange={(e) => patch({ columnId: Number(e.target.value), position: 0 }, "Sütun güncellendi")} data-testid="select-detail-column">
