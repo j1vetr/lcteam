@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { Bell, CheckSquare, Kanban, LayoutDashboard, LogOut, Menu, Plus, Settings, Users } from "lucide-react";
@@ -102,13 +102,34 @@ function NavBody({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const [location] = useLocation();
+  const [expanded, setBoardExpanded] = useState(false);
+  const boardExpanded = expanded && location === "/my-tasks";
   const [mobileOpen, setMobileOpen] = useState(false);
   const [taskId, setTaskId] = useState<number | null>(null);
   const [newOpen, setNewOpen] = useState(false);
   const [defaults, setDefaults] = useState<NewTaskDefaults>({});
   const unread = useUnread();
 
+  useEffect(() => {
+    if (location !== "/my-tasks") setBoardExpanded(false);
+  }, [location]);
+
+  useEffect(() => {
+    if (!boardExpanded) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || event.defaultPrevented) return;
+      // Let task sheets and confirmation dialogs handle Escape first.
+      if (document.querySelector('[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"]')) return;
+      setBoardExpanded(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [boardExpanded]);
+
   const ctx = {
+    boardExpanded,
+    setBoardExpanded,
     openTask: (id: number) => setTaskId(id),
     newTask: (d?: NewTaskDefaults) => {
       setDefaults(d ?? {});
@@ -119,10 +140,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <TaskUiContext.Provider value={ctx}>
       <div className="min-h-[100dvh] bg-background">
-        <aside className="fixed inset-y-0 left-0 hidden w-[236px] border-r border-border bg-sidebar md:block">
+        <aside hidden={boardExpanded} className={cn("fixed inset-y-0 left-0 hidden w-[236px] border-r border-border bg-sidebar", !boardExpanded && "md:block")}>
           <NavBody />
         </aside>
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-card/95 px-4 backdrop-blur md:hidden">
+        <header className={cn("sticky top-0 z-30 h-14 items-center justify-between border-b border-border bg-card/95 px-4 backdrop-blur", boardExpanded ? "hidden" : "flex md:hidden")}>
           <button aria-label="Menüyü aç" className="flex h-9 w-9 items-center justify-center rounded-full bg-muted" onClick={() => setMobileOpen(true)} data-testid="button-mobile-menu">
             <Menu className="h-4 w-4" />
           </button>
@@ -139,9 +160,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             <NavBody onNavigate={() => setMobileOpen(false)} />
           </SheetContent>
         </Sheet>
-        <main className="md:pl-[236px]">{children}</main>
+        <main className={cn(!boardExpanded && "md:pl-[236px]")}>{children}</main>
         <button
-          className="pill pill-primary fixed bottom-5 right-5 z-20 h-12 px-5 md:hidden"
+          className={cn("pill pill-primary fixed bottom-5 right-5 z-20 h-12 px-5", boardExpanded ? "hidden" : "md:hidden")}
           onClick={() => ctx.newTask()}
           data-testid="button-fab-new-task"
         >

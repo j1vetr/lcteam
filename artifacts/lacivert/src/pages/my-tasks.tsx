@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarClock, CheckSquare, Plus } from "lucide-react";
+import { CalendarClock, CheckSquare, Maximize2, Minimize2, Plus } from "lucide-react";
 import { useUpdateTask, type Task, type Workspace } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -16,7 +16,7 @@ type Tab = "personal" | "assigned";
 export default function MyTasksPage() {
   const me = useMe();
   const { data: ws, isLoading, isError, refetch } = useWorkspace();
-  const { newTask } = useTaskUi();
+  const { newTask, boardExpanded, setBoardExpanded } = useTaskUi();
   const [tab, setTab] = useState<Tab>("personal");
   const [hideDone, setHideDone] = useState(false);
   const [month, setMonth] = useState("");
@@ -31,11 +31,28 @@ export default function MyTasksPage() {
   const shown = filtered.filter((t) => matchesTaskMonth(t, month));
 
   return (
-    <div className={cn("mx-auto px-4 py-6 md:px-8 md:py-8", tab === "personal" && view === "board" ? "max-w-[1280px]" : "max-w-[1100px]")}>
+    <div data-testid="personal-board-page" data-expanded={boardExpanded} className={cn(
+      "mx-auto min-h-[100dvh] px-4 py-6",
+      boardExpanded ? "max-w-none md:px-6 md:py-6" : tab === "personal" && view === "board" ? "max-w-none md:px-8 md:py-8" : "max-w-[1100px] md:px-8 md:py-8",
+    )}>
       <PageHeader
         title="Kişisel Pano"
         sub={tab === "personal" ? "Yalnızca sizin gördüğünüz özel görevler." : "Şirket panolarında size atanan görevler."}
-        actions={<button className="pill pill-primary" onClick={() => newTask()} data-testid="button-new-personal"><Plus className="h-4 w-4" />Kişisel görev</button>}
+        actions={<>
+          <button
+            type="button"
+            className="pill pill-soft"
+            onClick={() => setBoardExpanded(!boardExpanded)}
+            aria-pressed={boardExpanded}
+            aria-label={boardExpanded ? "Tam Ekrandan Çık" : "Panoyu Tam Ekran Yap"}
+            title={boardExpanded ? "Tam Ekrandan Çık (Esc)" : "Tam Ekran"}
+            data-testid="button-personal-fullscreen"
+          >
+            {boardExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            {boardExpanded ? "Tam Ekrandan Çık" : "Tam Ekran"}
+          </button>
+          <button className="pill pill-primary" onClick={() => newTask()} data-testid="button-new-personal"><Plus className="h-4 w-4" />Kişisel görev</button>
+        </>}
       />
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Segmented value={tab} onChange={setTab} options={[{ value: "personal", label: `Kişisel Pano ${personal.length}` }, { value: "assigned", label: `Atanan Görevler ${assigned.length}` }]} />

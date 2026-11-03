@@ -97,6 +97,13 @@ export function isAssignedToMe(t: Task, me: User, ws?: Workspace) {
 }
 
 export type NewTaskDefaults = { boardId?: number | null; columnId?: number | null };
-type Ctx = { openTask: (id: number) => void; newTask: (d?: NewTaskDefaults) => void };
-export const TaskUiContext = createContext<Ctx>({ openTask: () => {}, newTask: () => {} });
+type Ctx = {
+  openTask: (id: number) => void;
+  newTask: (d?: NewTaskDefaults) => void;
+  boardExpanded: boolean;
+  setBoardExpanded: (expanded: boolean) => void;
+};
+export const TaskUiContext = createContext<Ctx>({
+  openTask: () => {}, newTask: () => {}, boardExpanded: false, setBoardExpanded: () => {},
+});
 export const useTaskUi = () => useContext(TaskUiContext);
