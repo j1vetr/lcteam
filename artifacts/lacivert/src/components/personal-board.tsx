@@ -85,7 +85,7 @@ export function PersonalBoard({ ws, tasks, visible }: { ws: Workspace; tasks: Ta
       {tasks.length === 0 && (
         <p className="mb-3 flex items-center gap-1.5 px-1 text-[13px] text-muted-foreground"><Lock className="h-3.5 w-3.5" />Panonuz boş. İlk görevinizi herhangi bir sütuna yazarak başlayın.</p>
       )}
-      <div className="scroll-x -mx-4 flex items-start gap-3 overflow-x-auto px-4 pb-4 md:mx-0 md:px-0" data-testid="board-personal" aria-busy={moving}>
+      <div className="personal-board-layout scroll-x -mx-4 flex items-start gap-3 overflow-x-auto px-4 pb-4 md:mx-0 md:px-0" data-testid="board-personal" aria-busy={moving}>
         {cols.map((col, ci) => {
           const all = inCol(col.id);
           const list = all.filter(visible);
@@ -93,7 +93,7 @@ export function PersonalBoard({ ws, tasks, visible }: { ws: Workspace; tasks: Ta
             <section
               key={col.id}
               aria-label={col.name}
-              className={cn("flex w-[284px] shrink-0 flex-col rounded-3xl bg-muted/70 transition-colors md:min-w-[240px] md:flex-1", drop?.c === col.id && "bg-[hsl(222_40%_93%)]")}
+              className={cn("flex w-[284px] shrink-0 flex-col rounded-3xl bg-muted/70 transition-colors md:w-auto md:min-w-0", drop?.c === col.id && "bg-[hsl(222_40%_93%)]")}
               onDragOver={(e) => {
                 if (dragId.current === null || moving) return;
                 e.preventDefault();
@@ -144,7 +144,7 @@ export function PersonalBoard({ ws, tasks, visible }: { ws: Workspace; tasks: Ta
             </section>
           );
         })}
-        <div className="w-[260px] shrink-0">
+        <div className="w-[260px] shrink-0 md:w-auto md:min-w-0">
           {adding ? (
             <AddColumnForm onDone={() => setAdding(false)} />
           ) : (
